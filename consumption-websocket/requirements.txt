@@ -1,0 +1,4 @@
+fastapi
+uvicorn
+meross-iot
+websockets
