@@ -1,8 +1,5 @@
-using System;
-using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using XRPAtom.Blockchain.Interfaces;
@@ -267,45 +264,73 @@ namespace XRPAtom.Blockchain.Services
         }
 
         #region Helper Methods
-
+        
         private object BuildPaymentTransaction(TransactionPrepareRequest request, uint sequence, uint lastLedgerSequence)
         {
-            // Check if this is an XRP payment or an issued currency payment
-            if (request.Currency == "XRP")
+            var baseTransaction = new
             {
-                // XRP payment
-                return new
-                {
-                    TransactionType = "Payment",
-                    Account = request.SourceAddress,
-                    Destination = request.DestinationAddress,
-                    Amount = Convert.ToString(Convert.ToUInt64(request.Amount * 1000000)), // Convert to drops (1 XRP = 1,000,000 drops)
-                    Sequence = sequence,
-                    Fee = "12", // Standard fee in drops
-                    LastLedgerSequence = lastLedgerSequence,
-                    Flags = request.Flags ?? 0
-                };
-            }
-            else
+                TransactionType = "Payment",
+                Account = request.SourceAddress,
+                Destination = request.DestinationAddress,
+                Amount = Convert.ToString(Convert.ToUInt64(request.Amount * 1000000)),
+                Sequence = sequence,
+                Fee = "12",
+                LastLedgerSequence = lastLedgerSequence
+            };
+
+            // Add memo if provided
+            if (!string.IsNullOrEmpty(request.Memo))
             {
-                // Issued currency payment
-                return new
+                // Convert memo to hex
+                byte[] memoBytes = Encoding.UTF8.GetBytes(request.Memo);
+                string memoHex = BitConverter.ToString(memoBytes).Replace("-", "").ToLower();
+
+                // Create memo object
+                var memoObject = new
                 {
-                    TransactionType = "Payment",
-                    Account = request.SourceAddress,
-                    Destination = request.DestinationAddress,
-                    Amount = new
+                    Memos = new[]
                     {
-                        currency = request.Currency,
-                        issuer = request.Issuer,
-                        value = request.Amount.ToString()
-                    },
-                    Sequence = sequence,
-                    Fee = "12",
-                    LastLedgerSequence = lastLedgerSequence,
-                    Flags = request.Flags ?? 0
+                        new
+                        {
+                            Memo = new
+                            {
+                                MemoData = memoHex,
+                                MemoType = !string.IsNullOrEmpty(request.MemoType) 
+                                    ? BitConverter.ToString(Encoding.UTF8.GetBytes(request.MemoType)).Replace("-", "").ToLower() 
+                                    : null
+                            }
+                        }
+                    }
                 };
+
+                // Merge base transaction with memo
+                return MergeDynamicObjects(baseTransaction, memoObject);
             }
+
+            return baseTransaction;
+        }
+        
+        private object MergeDynamicObjects(object obj1, object obj2)
+        {
+            var dictionary1 = obj1 as IDictionary<string, object> 
+                              ?? obj1.GetType().GetProperties().ToDictionary(
+                                  prop => prop.Name, 
+                                  prop => prop.GetValue(obj1, null)
+                              );
+
+            var dictionary2 = obj2 as IDictionary<string, object> 
+                              ?? obj2.GetType().GetProperties().ToDictionary(
+                                  prop => prop.Name, 
+                                  prop => prop.GetValue(obj2, null)
+                              );
+
+            var mergedDictionary = new Dictionary<string, object>(dictionary1);
+            foreach (var kvp in dictionary2)
+            {
+                mergedDictionary[kvp.Key] = kvp.Value;
+            }
+
+            return mergedDictionary;
         }
 
         private object BuildTrustSetTransaction(TransactionPrepareRequest request, uint sequence, uint lastLedgerSequence)

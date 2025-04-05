@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using XRPAtom.Core.Domain;
 
 namespace XRPAtom.Core.Repositories
@@ -84,5 +82,13 @@ namespace XRPAtom.Core.Repositories
         /// <param name="id">The transaction identifier</param>
         /// <returns>True if increment was successful, false otherwise</returns>
         Task<bool> IncrementRetryCountAsync(string id);
+
+        /// <summary>
+        /// Updates the transaction hash for a specific transaction
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="transactionHash"></param>
+        /// <returns></returns>
+        Task<bool> UpdateTransactionHash(string id, string transactionHash);
     }
 }

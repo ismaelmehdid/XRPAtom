@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using XRPAtom.Core.Domain;
@@ -366,7 +362,6 @@ namespace XRPAtom.Infrastructure.Services
                     Id = user.Wallet.Id,
                     UserId = user.Wallet.UserId,
                     Address = user.Wallet.Address,
-                    PublicKey = user.Wallet.PublicKey,
                     Balance = user.Wallet.Balance,
                     AtomTokenBalance = user.Wallet.AtomTokenBalance,
                     TotalRewardsClaimed = user.Wallet.TotalRewardsClaimed,

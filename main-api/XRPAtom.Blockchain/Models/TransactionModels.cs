@@ -1,5 +1,3 @@
-using System;
-
 namespace XRPAtom.Blockchain.Models
 {
     #region Transaction Preparation Models
@@ -72,6 +70,16 @@ namespace XRPAtom.Blockchain.Models
         /// The amount that the offer creator pays
         /// </summary>
         public decimal PaysAmount { get; set; }
+        
+        /// <summary>
+        /// Optional memo to attach to the transaction
+        /// </summary>
+        public string Memo { get; set; }
+
+        /// <summary>
+        /// Optional memo type for additional context
+        /// </summary>
+        public string MemoType { get; set; }
     }
 
     public class TransactionPrepareResponse

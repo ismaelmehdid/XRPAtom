@@ -1,7 +1,5 @@
-using System.Threading.Tasks;
 using XRPAtom.Core.Domain;
 using XRPAtom.Core.DTOs;
-using XRPAtom.Core.Security;
 
 namespace XRPAtom.Core.Interfaces
 {

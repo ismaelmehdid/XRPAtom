@@ -1,10 +1,5 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Text;
-using XRMAtom.Infrastructure.Services;
 using XRPAtom.Core.Interfaces;
 using XRPAtom.Core.Repositories;
 using XRPAtom.Infrastructure.Data.Repositories;

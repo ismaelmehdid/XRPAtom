@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-using XRPAtom.Core.Domain;
 using XRPAtom.Core.DTOs;
 
 namespace XRPAtom.Blockchain.Interfaces
@@ -25,9 +23,8 @@ namespace XRPAtom.Blockchain.Interfaces
         /// </summary>
         /// <param name="userId">The user ID</param>
         /// <param name="address">The XRPL address</param>
-        /// <param name="publicKey">The public key (optional)</param>
         /// <returns>The created wallet</returns>
-        Task<UserWalletDto> CreateWalletAsync(string userId, string address, string publicKey);
+        Task<UserWalletDto> CreateWalletAsync(string userId, string address);
         
         /// <summary>
         /// Updates a wallet's XRP balance

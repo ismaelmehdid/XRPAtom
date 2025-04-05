@@ -1,11 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using XRPAtom.Core.Domain;
 using XRPAtom.Core.Repositories;
-using XRPAtom.Infrastructure.Data;
 
 namespace XRPAtom.Infrastructure.Data.Repositories
 {
@@ -27,6 +22,20 @@ namespace XRPAtom.Infrastructure.Data.Repositories
         {
             return await _context.Transactions
                 .FirstOrDefaultAsync(t => t.TransactionHash == hash);
+        }
+        
+        public async Task<bool> UpdateTransactionHash(string id, string transactionHash)
+        {
+            var transaction = await _context.Transactions.FindAsync(id);
+    
+            if (transaction == null)
+            {
+                return false;
+            }
+
+            transaction.TransactionHash = transactionHash;
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<IEnumerable<Transaction>> GetTransactionsByAddressAsync(

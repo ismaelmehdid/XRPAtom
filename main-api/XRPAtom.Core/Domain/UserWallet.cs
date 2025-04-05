@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace XRPAtom.Core.Domain
@@ -14,9 +13,6 @@ namespace XRPAtom.Core.Domain
         [Required]
         [StringLength(50)]
         public string Address { get; set; }
-        
-        [StringLength(150)]
-        public string PublicKey { get; set; }
         
         public decimal Balance { get; set; }
         
