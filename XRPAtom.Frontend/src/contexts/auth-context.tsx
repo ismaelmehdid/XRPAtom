@@ -1,5 +1,6 @@
 "use client"
 
+import { removeAuthToken, setAuthToken, getAuthToken, isTokenValid, getTokenPayload } from "@/lib/auth"
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
 export type UserRole = "tso" | "residential"
@@ -15,66 +16,61 @@ interface UserData {
 interface AuthContextType {
   isLoggedIn: boolean
   userData: UserData | null
-  login: (role: UserRole) => void
+  login: (token: string, userData: UserData) => void
   logout: () => void
   userRole: UserRole | null
   isTSO: boolean
+  isLoading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Sample user data for each role
-const sampleUsers: Record<UserRole, UserData> = {
-  tso: {
-    id: "tso-123",
-    name: "Grid Operator",
-    email: "operator@gridco.com",
-    role: "tso",
-    organization: "Pacific Grid Solutions",
-  },
-  residential: {
-    id: "res-456",
-    name: "John Doe",
-    email: "john@example.com",
-    role: "residential",
-  },
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userData, setUserData] = useState<UserData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Check localStorage on initial load
+  // Check token and initialize auth state on mount
   useEffect(() => {
-    const storedAuthState = localStorage.getItem("xrpatom-auth")
-    const storedUserRole = localStorage.getItem("xrpatom-user-role")
-
-    if (storedAuthState && JSON.parse(storedAuthState)) {
-      setIsLoggedIn(true)
-      if (storedUserRole && (storedUserRole === "tso" || storedUserRole === "residential")) {
-        setUserData(sampleUsers[storedUserRole as UserRole])
+    const initializeAuth = async () => {
+      try {
+        const token = getAuthToken()
+        if (token && isTokenValid()) {
+          const payload = getTokenPayload()
+          if (payload) {
+            // You might want to fetch the user data from your API here
+            // For now, we'll use the data from the token
+            const userData: UserData = {
+              id: payload.userId,
+              name: payload.name,
+              email: payload.email,
+              role: payload.role,
+              organization: payload.organization
+            }
+            setUserData(userData)
+            setIsLoggedIn(true)
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing auth:', error)
+        logout()
+      } finally {
+        setIsLoading(false)
       }
     }
+    initializeAuth()
   }, [])
 
-  // Update localStorage when auth state changes
-  useEffect(() => {
-    localStorage.setItem("xrpatom-auth", JSON.stringify(isLoggedIn))
-    if (userData) {
-      localStorage.setItem("xrpatom-user-role", userData.role)
-    } else {
-      localStorage.removeItem("xrpatom-user-role")
-    }
-  }, [isLoggedIn, userData])
-
-  const login = (role: UserRole) => {
+  const login = (token: string, userData: UserData) => {
+    setAuthToken(token)
+    setUserData(userData)
     setIsLoggedIn(true)
-    setUserData(sampleUsers[role])
   }
 
   const logout = () => {
     setIsLoggedIn(false)
     setUserData(null)
+    removeAuthToken()
   }
 
   const userRole = userData?.role || null
@@ -89,6 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         userRole,
         isTSO,
+        isLoading
       }}
     >
       {children}

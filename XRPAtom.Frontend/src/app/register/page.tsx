@@ -11,13 +11,14 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
+import { toast } from "sonner"
 
 export default function RegisterPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
+    name: "",
     email: "",
+    phone_number: "",
     organization: "",
     PDL_number: "",
     password: "",
@@ -36,9 +37,46 @@ export default function RegisterPage() {
     setIsLoading(true)
     setError("")
 
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match")
+      setIsLoading(false)
+      return
+    }
+
     console.log(formData)
 
-    // TODO: Call c# API to handle register
+    try {
+      const response = await fetch("https://api.zunix.systems/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phoneNumber: formData.phone_number,
+          organization: formData.organization,
+          pdlNumber: formData.PDL_number,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+        }),
+      })
+
+      const data = await response.json()
+      console.log(data)
+
+      if (!response.ok) {
+        toast.error(data.message || "Registration failed")
+      } else {
+        toast.success("Registration successful!")
+        router.push("/login")
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred during registration")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -59,12 +97,12 @@ export default function RegisterPage() {
               )}
               <div className="grid gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="first_name">First name</Label>
-                  <Input id="first_name" name="first_name" type="text" value={formData.first_name} onChange={handleChange} required />
+                  <Label htmlFor="name">Name</Label>
+                  <Input id="name" name="name" type="text" value={formData.name} onChange={handleChange} required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="last_name">Last name</Label>
-                  <Input id="last_name" name="last_name" type="text" value={formData.last_name} onChange={handleChange} required />
+                  <Label htmlFor="phone_number">Phone number</Label>
+                  <Input id="phone_number" name="phone_number" type="text" value={formData.phone_number} onChange={handleChange} required />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
