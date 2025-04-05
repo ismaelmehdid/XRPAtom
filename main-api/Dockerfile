@@ -41,9 +41,5 @@ ENV ASPNETCORE_ENVIRONMENT=Production
 # Expose port 80
 EXPOSE 80
 
-# Configure health check for container orchestration
-HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-    CMD curl -f http://localhost:80/health || exit 1
-
 # Start the app
 ENTRYPOINT ["dotnet", "XRPAtom.API.dll"]
