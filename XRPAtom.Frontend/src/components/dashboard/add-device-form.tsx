@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { Thermometer, Droplet, Car, Plug, Lightbulb, Battery } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
+import { useAuth } from "@/contexts/auth-context"
+import { registerDevice } from "@/lib/api"
 
 type DeviceType = "thermostat" | "water_heater" | "ev_charger" | "smart_plug" | "smart_light" | "battery"
 
@@ -58,10 +60,32 @@ const deviceTypes: DeviceTypeOption[] = [
     icon: <Battery className="h-5 w-5" />,
     manufacturers: ["Tesla Powerwall", "LG Chem", "Enphase", "Generac", "Sonnen"],
   },
+
+  // id userid, name device, type, manufacturer, model, status (online, offline)
+  // Register device: 
+  /*
+    {
+      "userId": "dc1ee74f-e894-4c8e-aeb1-e0a08e411094",
+      "name": "Meross Switch-1",
+      "type": "switch",
+      "manufacturer": "Meross",
+      "model": "MSS210",
+      "enrolled": true,
+      "curtailmentLevel": 3,
+      "location": "VO2",
+      "energyCapacity": 100,
+      "preferences": "string"
+    }
+  */
 ]
 
-export function AddDeviceForm() {
+interface AddDeviceFormProps {
+  onDeviceAdded?: () => void
+}
+
+export function AddDeviceForm({ onDeviceAdded }: AddDeviceFormProps) {
   const { toast } = useToast()
+  const { userData } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedType, setSelectedType] = useState<DeviceType | null>(null)
   const [formData, setFormData] = useState({
@@ -90,23 +114,23 @@ export function AddDeviceForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!selectedType) return
+    if (!selectedType || !userData) return
 
     setIsSubmitting(true)
 
     try {
-      // This would be replaced with actual API call to your C# backend
-      // const response = await fetch('/api/devices', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     ...formData,
-      //     type: selectedType
-      //   }),
-      // })
+      const deviceData = {
+        userId: userData.id,
+        name: formData.name,
+        type: selectedType,
+        manufacturer: formData.manufacturer,
+        model: formData.model,
+        enrolled: formData.enrollImmediately,
+        curtailmentLevel: 3, // Default to maximum curtailment level
+        location: formData.location,
+      }
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      //TODO: API Call to register device
 
       toast({
         title: "Device Added Successfully",
@@ -122,10 +146,13 @@ export function AddDeviceForm() {
         enrollImmediately: true,
       })
       setSelectedType(null)
+
+      // Notify parent component
+      onDeviceAdded?.()
     } catch (error) {
       toast({
         title: "Error Adding Device",
-        description: "There was a problem adding your device. Please try again.",
+        description: error instanceof Error ? error.message : "There was a problem adding your device. Please try again.",
         variant: "destructive",
       })
     } finally {

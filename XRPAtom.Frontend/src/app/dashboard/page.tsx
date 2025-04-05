@@ -2,7 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { EnergyOverview } from "@/components/dashboard/energy-overview"
+import { EnergyOverview, LiveEnergyUsage } from "@/components/dashboard/energy-overview"
 import { CurtailmentEvents } from "@/components/dashboard/curtailment-events"
 import { DeviceStatus } from "@/components/dashboard/device-status"
 import { AddDeviceForm } from "@/components/dashboard/add-device-form"
@@ -10,9 +10,15 @@ import { RewardsSummary } from "@/components/dashboard/rewards-summary"
 import { Button } from "@/components/ui/button"
 import { CalendarIcon } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
+import { useState } from "react"
 
 export default function DashboardPage() {
   const { isTSO } = useAuth()
+  const [refreshDevices, setRefreshDevices] = useState(0)
+
+  const handleDeviceAdded = () => {
+    setRefreshDevices(prev => prev + 1)
+  }
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -47,6 +53,15 @@ export default function DashboardPage() {
                   <EnergyOverview />
                 </CardContent>
               </Card>
+              <Card className="col-span-4">
+                <CardHeader>
+                  <CardTitle>Live Energy Usage</CardTitle>
+                  <CardDescription>Your energy usage in real time</CardDescription>
+                </CardHeader>
+                <CardContent className="pl-2">
+                  <LiveEnergyUsage />
+                </CardContent>
+              </Card>
               <Card className="col-span-3">
                 <CardHeader>
                   <CardTitle>Recent Curtailment Events</CardTitle>
@@ -69,12 +84,12 @@ export default function DashboardPage() {
                       <CardDescription>Manage your smart devices and curtailment settings</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <DeviceStatus />
+                      <DeviceStatus key={refreshDevices} />
                     </CardContent>
                   </Card>
                 </div>
                 <div>
-                  <AddDeviceForm />
+                  <AddDeviceForm onDeviceAdded={handleDeviceAdded} />
                 </div>
               </div>
             </TabsContent>

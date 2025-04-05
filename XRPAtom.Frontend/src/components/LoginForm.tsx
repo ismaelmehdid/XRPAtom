@@ -17,7 +17,6 @@ interface LoginFormData {
 
 export default function LoginForm() {
 
-  
   const router = useRouter();
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -40,7 +39,16 @@ export default function LoginForm() {
     setIsLoading(true)
     setError("")
     console.log(formData)
-    //TODO: Call c# API to handle login
+
+    try {
+      //TODO: Call c# API to handle login
+      // For now, we'll simulate a successful login
+      router.push("/dashboard")
+    } catch (err) {
+      setError("Failed to login. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   };
 
   return (
