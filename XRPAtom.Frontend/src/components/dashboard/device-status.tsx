@@ -206,7 +206,7 @@ export function DeviceStatus() {
               className="text-gray-600 hover:bg-gray-200" 
               onClick={() => {
                 setIsSettingsOpen(false)
-                setSelectedDevice(null) // Очищаем selectedDevice при закрытии
+                setSelectedDevice(null)
               }}>
               Close
             </Button>
