@@ -1,5 +1,7 @@
 // API utility functions to interact with the C# backend
 
+import { getAuthToken } from "./auth"
+
 type ApiResponse<T> = {
   data?: T
   error?: string
@@ -9,11 +11,12 @@ type ApiResponse<T> = {
  * Base function for making API requests to the C# backend
  */
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.zunix.systems/api"
   const url = `${apiUrl}${endpoint}`
-
+  const token = getAuthToken()
   const defaultHeaders = {
     "Content-Type": "application/json",
+    "Authorization": "Bearer " + token,
   }
 
   try {
@@ -48,8 +51,8 @@ export async function getUserAccount(userId: string): Promise<ApiResponse<UserAc
 /**
  * Get user's connected devices
  */
-export async function getUserDevices(userId: string): Promise<ApiResponse<{ devices: Device[] }>> {
-  return fetchApi<{ devices: Device[] }>(`/users/${userId}/devices`)
+export async function getUserDevices(): Promise<ApiResponse<{ devices: Device[] }>> {
+  return fetchApi<{ devices: Device[] }>(`/devices`)
 }
 
 /**
@@ -130,6 +133,7 @@ export interface UserAccount {
 
 export interface Device {
   id: string
+  userId: string
   name: string
   type: string
   manufacturer: string
@@ -137,7 +141,11 @@ export interface Device {
   status: "online" | "offline"
   enrolled: boolean
   curtailmentLevel: number
-  lastSeen: string
+  lastSeen: string,
+  location: string,
+  energyCapacity: number
+  createdAt: string
+  preferences: string
 }
 
 export interface DeviceSettings {

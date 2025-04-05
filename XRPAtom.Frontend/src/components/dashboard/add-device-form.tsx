@@ -14,7 +14,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { useAuth } from "@/contexts/auth-context"
 import { registerDevice } from "@/lib/api"
 
-type DeviceType = "thermostat" | "water_heater" | "ev_charger" | "smart_plug" | "smart_light" | "battery"
+export type DeviceType = "thermostat" | "water_heater" | "ev_charger" | "smart_plug" | "smart_light" | "battery"
 
 interface DeviceTypeOption {
   value: DeviceType
@@ -60,23 +60,6 @@ const deviceTypes: DeviceTypeOption[] = [
     icon: <Battery className="h-5 w-5" />,
     manufacturers: ["Tesla Powerwall", "LG Chem", "Enphase", "Generac", "Sonnen"],
   },
-
-  // id userid, name device, type, manufacturer, model, status (online, offline)
-  // Register device: 
-  /*
-    {
-      "userId": "dc1ee74f-e894-4c8e-aeb1-e0a08e411094",
-      "name": "Meross Switch-1",
-      "type": "switch",
-      "manufacturer": "Meross",
-      "model": "MSS210",
-      "enrolled": true,
-      "curtailmentLevel": 3,
-      "location": "VO2",
-      "energyCapacity": 100,
-      "preferences": "string"
-    }
-  */
 ]
 
 interface AddDeviceFormProps {
