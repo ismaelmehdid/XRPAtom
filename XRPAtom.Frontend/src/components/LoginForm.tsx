@@ -9,6 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { toast } from 'sonner';
+import { setAuthToken } from '@/lib/auth';
+import { useAuth } from '@/contexts/auth-context';
 
 interface LoginFormData {
   email: string;
@@ -16,7 +19,7 @@ interface LoginFormData {
 }
 
 export default function LoginForm() {
-
+  const { login } = useAuth()
   const router = useRouter();
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -41,11 +44,35 @@ export default function LoginForm() {
     console.log(formData)
 
     try {
-      //TODO: Call c# API to handle login
-      // For now, we'll simulate a successful login
-      router.push("/dashboard")
+      const response = await fetch("https://api.zunix.systems/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      })
+
+      const data = await response.json()
+
+      console.log(data)
+
+      if (!response.ok) {
+        toast.error(data.message || "Login failed")
+        setIsLoading(false)
+      } else {
+        if (data.token) {
+          login(data.token, data.user)
+          toast.success("Login successful!")
+          router.push("/dashboard") // Redirect to dashboard or home page
+        } else {
+          toast.error("No token received from server")
+        }
+      }
     } catch (err) {
-      setError("Failed to login. Please try again.")
+      toast.error("Failed to login. Please try again.")
     } finally {
       setIsLoading(false)
     }

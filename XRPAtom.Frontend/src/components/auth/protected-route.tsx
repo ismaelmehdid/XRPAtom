@@ -9,6 +9,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { RoleSelector } from "@/components/auth/role-selector"
 import { ArrowLeft } from "lucide-react"
+import LoginForm from "../LoginForm"
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -30,27 +31,8 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
 
   if (!isLoggedIn) {
     return (
-      <div className="container mx-auto px-4 py-12">
-        <Alert variant="destructive" className="mb-6">
-          <AlertTitle>Authentication Required</AlertTitle>
-          <AlertDescription>You need to be logged in to access this page.</AlertDescription>
-        </Alert>
-
-        <div className="flex flex-col items-center justify-center space-y-4 p-8 border rounded-lg bg-muted/50">
-          <h2 className="text-2xl font-bold">Access Restricted</h2>
-          <p className="text-muted-foreground text-center max-w-md mb-4">
-            This is a protected page. Please select your user type to continue.
-          </p>
-
-          <RoleSelector />
-
-          <Button variant="outline" onClick={() => router.push("/")} className="mt-4">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Return to Home
-          </Button>
-        </div>
-      </div>
-    )
+      <LoginForm />
+    );
   }
 
   if (isLoggedIn && !hasAccess) {
