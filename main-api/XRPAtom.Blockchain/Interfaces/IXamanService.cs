@@ -1,7 +1,11 @@
 using XRPAtom.Blockchain.Models;
+using XRPAtom.Blockchain.Services;
 
 namespace XRPAtom.Blockchain.Interfaces
 {
+    /// <summary>
+    /// Interface for services that interact with the Xaman (XUMM) API
+    /// </summary>
     public interface IXamanService
     {
         /// <summary>

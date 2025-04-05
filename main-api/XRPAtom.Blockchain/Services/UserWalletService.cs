@@ -62,7 +62,7 @@ namespace XRPAtom.Blockchain.Services
             }
         }
 
-        public async Task<UserWalletDto> CreateWalletAsync(string userId, string address, string publicKey)
+        public async Task<UserWalletDto> CreateWalletAsync(string userId, string address)
         {
             try
             {
@@ -89,7 +89,6 @@ namespace XRPAtom.Blockchain.Services
                 {
                     UserId = userId,
                     Address = address,
-                    PublicKey = publicKey,
                     Balance = 0,
                     AtomTokenBalance = 0,
                     TotalRewardsClaimed = 0,
@@ -244,7 +243,6 @@ namespace XRPAtom.Blockchain.Services
                 Id = wallet.Id,
                 UserId = wallet.UserId,
                 Address = wallet.Address,
-                PublicKey = wallet.PublicKey,
                 Balance = wallet.Balance,
                 AtomTokenBalance = wallet.AtomTokenBalance,
                 TotalRewardsClaimed = wallet.TotalRewardsClaimed,

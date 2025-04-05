@@ -89,7 +89,7 @@ namespace XRPAtom.API.Controllers
                 string secret = walletData.GetProperty("secret").GetString();
 
                 // Store the wallet in our database (but NOT the secret!)
-                var createdWallet = await _userWalletService.CreateWalletAsync(userId, address, publicKey);
+                var createdWallet = await _userWalletService.CreateWalletAsync(userId, address);
 
                 // Return wallet information including the secret (only at creation time)
                 return Ok(new
@@ -142,7 +142,7 @@ namespace XRPAtom.API.Controllers
                 }
 
                 // Store the wallet in our database
-                var createdWallet = await _userWalletService.CreateWalletAsync(userId, request.Address, null);
+                var createdWallet = await _userWalletService.CreateWalletAsync(userId, request.Address);
 
                 return Ok(new { address = request.Address, message = "Wallet imported successfully" });
             }

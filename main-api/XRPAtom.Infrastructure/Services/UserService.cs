@@ -362,7 +362,6 @@ namespace XRPAtom.Infrastructure.Services
                     Id = user.Wallet.Id,
                     UserId = user.Wallet.UserId,
                     Address = user.Wallet.Address,
-                    PublicKey = user.Wallet.PublicKey,
                     Balance = user.Wallet.Balance,
                     AtomTokenBalance = user.Wallet.AtomTokenBalance,
                     TotalRewardsClaimed = user.Wallet.TotalRewardsClaimed,

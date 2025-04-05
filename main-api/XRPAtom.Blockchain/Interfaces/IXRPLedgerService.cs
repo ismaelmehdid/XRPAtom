@@ -76,5 +76,11 @@ namespace XRPAtom.Blockchain.Interfaces
         /// <param name="secret">The buyer's secret key</param>
         /// <returns>The transaction result</returns>
         Task<string> AcceptOffer(string offerId, string buyerAddress, string secret);
+        
+        /// <summary>
+        /// Gets the current ledger index
+        /// </summary>
+        /// <returns>The current ledger index as a JSON string</returns>
+        Task<string> GetLedgerCurrent();
     }
 }

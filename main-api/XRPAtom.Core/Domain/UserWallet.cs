@@ -14,9 +14,6 @@ namespace XRPAtom.Core.Domain
         [StringLength(50)]
         public string Address { get; set; }
         
-        [StringLength(150)]
-        public string PublicKey { get; set; }
-        
         public decimal Balance { get; set; }
         
         // Optional: Token balance for ATOM tokens
