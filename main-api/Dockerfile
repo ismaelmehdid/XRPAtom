@@ -30,7 +30,7 @@ WORKDIR /app
 COPY --from=build /app/out ./
 
 # Set environment variables
-ENV ASPNETCORE_URLS=http://+:443
+ENV ASPNETCORE_URLS=https://+:443
 ENV ASPNETCORE_ENVIRONMENT=Development
 
 # Expose port 80
