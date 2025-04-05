@@ -24,6 +24,34 @@ const data = [
     curtailed: Math.floor(Math.random() * 50) + 10,
     baseline: Math.floor(Math.random() * 100) + 50,
   },
+  {
+    curtailed: Math.floor(Math.random() * 50) + 10,
+    baseline: Math.floor(Math.random() * 100) + 50,
+  },
+  {
+    curtailed: Math.floor(Math.random() * 50) + 10,
+    baseline: Math.floor(Math.random() * 100) + 50,
+  },
+  {
+    curtailed: Math.floor(Math.random() * 50) + 10,
+    baseline: Math.floor(Math.random() * 100) + 50,
+  },
+  {
+    curtailed: Math.floor(Math.random() * 50) + 10,
+    baseline: Math.floor(Math.random() * 100) + 50,
+  },
+  {
+    curtailed: Math.floor(Math.random() * 50) + 10,
+    baseline: Math.floor(Math.random() * 100) + 50,
+  },
+  {
+    curtailed: Math.floor(Math.random() * 50) + 10,
+    baseline: Math.floor(Math.random() * 100) + 50,
+  },
+  {
+    curtailed: Math.floor(Math.random() * 50) + 10,
+    baseline: Math.floor(Math.random() * 100) + 50,
+  },
 ]
 
 export function LiveEnergyUsage() {
@@ -31,32 +59,35 @@ export function LiveEnergyUsage() {
 
   useEffect(() => {
     const web_socket = new WebSocket("wss://wss.zunix.systems/ws");
-    console.log("Connected to WebSocket");
 
-    web_socket.onmessage = (event) => {
-      const newData = JSON.parse(event.data);
-
-      setLiveData(prevData => {
-        const updatedData = [...prevData];
-        if (updatedData.length >= 60) {
-          updatedData.shift();
-        }
-        updatedData.push(newData);
-        return updatedData;
-      });
+    web_socket.onopen = () => {
+      console.log("✅ WebSocket connected");
     };
 
-    web_socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
+
+    web_socket.onmessage = (event) => {
+      try {
+        const newData = JSON.parse(event.data);
+  
+        setLiveData((prevData) => {
+          const updatedData = [...prevData];
+          if (updatedData.length >= 60) updatedData.shift();
+          updatedData.push(newData); // <- ou newData.consumption si c’est un objet
+          return updatedData;
+        });
+      } catch (err) {
+        console.error("❌ Error parsing message:", event.data, err);
+      }
     };
 
     web_socket.onclose = () => {
       console.log("WebSocket connection closed");
     };
 
-    return () => {
-      web_socket.close();
+    web_socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
     };
+
   }, []);
 
   return (
