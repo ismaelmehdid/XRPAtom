@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 namespace XRPAtom.Blockchain.Interfaces
 {
     public interface IXRPLedgerService

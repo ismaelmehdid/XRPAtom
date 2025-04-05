@@ -1,5 +1,3 @@
-using System;
-
 namespace XRPAtom.Blockchain.Models
 {
     #region Transaction Preparation Models

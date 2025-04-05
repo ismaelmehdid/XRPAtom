@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using XRPAtom.Blockchain.Models;
 
 namespace XRPAtom.Blockchain.Interfaces

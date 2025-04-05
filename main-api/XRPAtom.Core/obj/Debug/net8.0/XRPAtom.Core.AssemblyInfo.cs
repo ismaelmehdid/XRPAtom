@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("XRPAtom.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+24e315733fe48572c1791e670e96c26ade87c03c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+06a218426d0913346c2f630172a1200065b6b807")]
 [assembly: System.Reflection.AssemblyProductAttribute("XRPAtom.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("XRPAtom.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

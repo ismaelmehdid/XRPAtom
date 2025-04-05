@@ -1,5 +1,3 @@
-using System.Threading.Tasks;
-using XRPAtom.Core.Domain;
 using XRPAtom.Core.DTOs;
 
 namespace XRPAtom.Blockchain.Interfaces

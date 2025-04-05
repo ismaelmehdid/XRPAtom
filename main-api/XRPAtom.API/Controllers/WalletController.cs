@@ -1,8 +1,5 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using XRPAtom.Blockchain.Interfaces;
 using XRPAtom.Core.DTOs;
 using System.Text.Json;
