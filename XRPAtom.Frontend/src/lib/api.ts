@@ -107,6 +107,16 @@ export async function createMarketplaceListing(
   })
 }
 
+/**
+ * Register a new device
+ */
+export async function registerDevice(device: DeviceRegistration): Promise<ApiResponse<Device>> {
+  return fetchApi<Device>("/devices", {
+    method: "POST",
+    body: JSON.stringify(device),
+  })
+}
+
 // Types
 export interface UserAccount {
   id: string
@@ -180,5 +190,17 @@ export interface MarketplaceListingInput {
   pricePerKwh: number
   minKwh: number
   maxKwh: number
+}
+
+export interface DeviceRegistration {
+  userId: string
+  name: string
+  type: string
+  manufacturer: string
+  model: string
+  enrolled: boolean
+  curtailmentLevel: number
+  location: string
+  preferences?: Record<string, any>
 }
 

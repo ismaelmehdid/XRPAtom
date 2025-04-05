@@ -1,69 +1,114 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts"
 
 const data = [
   {
-    name: "Jan",
     curtailed: Math.floor(Math.random() * 50) + 10,
     baseline: Math.floor(Math.random() * 100) + 50,
   },
   {
-    name: "Feb",
+    curtailed: Math.floor(Math.random() * 50) + 10,
+    baseline: Math.floor(Math.random() * 100) + 50,
+  },  
+  {
     curtailed: Math.floor(Math.random() * 50) + 10,
     baseline: Math.floor(Math.random() * 100) + 50,
   },
   {
-    name: "Mar",
     curtailed: Math.floor(Math.random() * 50) + 10,
     baseline: Math.floor(Math.random() * 100) + 50,
   },
   {
-    name: "Apr",
     curtailed: Math.floor(Math.random() * 50) + 10,
     baseline: Math.floor(Math.random() * 100) + 50,
   },
   {
-    name: "May",
     curtailed: Math.floor(Math.random() * 50) + 10,
     baseline: Math.floor(Math.random() * 100) + 50,
   },
   {
-    name: "Jun",
     curtailed: Math.floor(Math.random() * 50) + 10,
     baseline: Math.floor(Math.random() * 100) + 50,
   },
   {
-    name: "Jul",
     curtailed: Math.floor(Math.random() * 50) + 10,
     baseline: Math.floor(Math.random() * 100) + 50,
   },
   {
-    name: "Aug",
     curtailed: Math.floor(Math.random() * 50) + 10,
     baseline: Math.floor(Math.random() * 100) + 50,
   },
   {
-    name: "Sep",
     curtailed: Math.floor(Math.random() * 50) + 10,
     baseline: Math.floor(Math.random() * 100) + 50,
   },
   {
-    name: "Oct",
     curtailed: Math.floor(Math.random() * 50) + 10,
     baseline: Math.floor(Math.random() * 100) + 50,
   },
   {
-    name: "Nov",
-    curtailed: Math.floor(Math.random() * 50) + 10,
-    baseline: Math.floor(Math.random() * 100) + 50,
-  },
-  {
-    name: "Dec",
     curtailed: Math.floor(Math.random() * 50) + 10,
     baseline: Math.floor(Math.random() * 100) + 50,
   },
 ]
+
+export function LiveEnergyUsage() {
+  const [liveData, setLiveData] = useState<number[]>([]);
+
+  useEffect(() => {
+    const web_socket = new WebSocket("wss://wss.zunix.systems/ws");
+
+    web_socket.onopen = () => {
+      console.log("✅ WebSocket connected");
+    };
+
+
+    web_socket.onmessage = (event) => {
+      try {
+        const newData = JSON.parse(event.data);
+  
+        setLiveData((prevData) => {
+          const updatedData = [...prevData];
+          if (updatedData.length >= 60) updatedData.shift();
+          updatedData.push(newData); // <- ou newData.consumption si c’est un objet
+          return updatedData;
+        });
+      } catch (err) {
+        console.error("❌ Error parsing message:", event.data, err);
+      }
+    };
+
+    web_socket.onclose = () => {
+      console.log("WebSocket connection closed");
+    };
+
+    web_socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+  }, []);
+
+  return (
+    <ResponsiveContainer width="100%" height={350}>
+      <BarChart data={liveData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <YAxis
+          stroke="#888888"
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={(value) => `${value} kWh`}
+        />
+        <Tooltip
+          formatter={(value) => [`${value} kWh`]}
+        />
+        <Bar name="Energy Curtailed" dataKey="consumption" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  )
+}
 
 export function EnergyOverview() {
   return (
