@@ -138,6 +138,11 @@ namespace XRPAtom.Infrastructure.Services
                 {
                     device.Preferences = System.Text.Json.JsonSerializer.Serialize(updateDeviceDto.Preferences);
                 }
+                
+                if (updateDeviceDto.Status.HasValue)
+                {
+                    device.Status = updateDeviceDto.Status.Value;
+                }
 
                 device.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
