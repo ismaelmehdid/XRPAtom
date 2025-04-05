@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import random
 import uuid
 
-app = FastAPI()
+app = FastAPI(docs_url="/docs", redoc_url=None, title="Consumption API", version="1.0.0")
 
 ADDRESSES = [
     "123 Energy Street, Powertown, 90210",
@@ -62,7 +62,11 @@ def generate_mock_data(start_date: str, end_date: str, granularity: str):
         "lowest": lowest
     }
 
-@app.get("/consumption")
+@app.get(
+    "/consumption",
+    summary="Get energy consumption for a PDL",
+    description="Fetch mock energy consumption data for a specific Point de Livraison (PDL) with configurable granularity."
+)
 def get_consumption(
     pdl_id: str = Query(..., description="Point de Livraison ID"),
     start_date: str = Query(..., description="Start date in ISO 8601 (YYYY-MM-DDTHH:MM:SSZ)"),
