@@ -32,7 +32,7 @@ COPY --from=build /app/out ./
 # Set environment variables
 # Force HTTP and disable HTTPS
 ENV ASPNETCORE_URLS=http://+:80
-ENV ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_ENVIRONMENT=Development
 # This is the critical setting to disable HTTPS redirect
 ENV ASPNETCORE_HTTP_PORTS=80
 # Disable HTTPS development certificate
