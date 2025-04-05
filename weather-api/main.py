@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 import requests
 
-app = FastAPI()
+app = FastAPI(docs_url="/docs", redoc_url=None, title="Weather API", version="1.0.0")
 
 HEADERS = {"User-Agent": "WeatherAPI/1.0 (asyvash.work.it@gmail.com)"}
 
@@ -36,10 +36,12 @@ def get_temperature(lat: float, lon: float):
 
     return data.get("current_weather", {}).get("temperature", "N/A")
 
-@app.get("/weather")
+@app.get(
+    "/weather",
+    summary="Get Weather Data",
+    description="Fetch weather data for a given address(city)",
+)
 def weather(address: str):
     lat, lon = get_coordinates(address)
     temperature = get_temperature(lat, lon)
     return {"address": address, "latitude": lat, "longitude": lon, "temperature": temperature}
-
-# http://localhost:51243/weather?address=Paris
