@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using XRPAtom.Blockchain.Interfaces;
 using XRPAtom.Core.Domain;
 using XRPAtom.Core.DTOs;
+using XRPAtom.Core.Interfaces;
 using XRPAtom.Infrastructure.Data;
 
 namespace XRPAtom.Blockchain.Services
@@ -36,28 +37,6 @@ namespace XRPAtom.Blockchain.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error retrieving wallet for user {UserId}", userId);
-                throw;
-            }
-        }
-
-        public async Task<UserWalletDto> GetWalletByAddressAsync(string address)
-        {
-            try
-            {
-                var wallet = await _context.UserWallets
-                    .Include(w => w.User)
-                    .FirstOrDefaultAsync(w => w.Address == address);
-
-                if (wallet == null)
-                {
-                    return null;
-                }
-
-                return MapToWalletDto(wallet);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving wallet with address {Address}", address);
                 throw;
             }
         }
@@ -132,83 +111,7 @@ namespace XRPAtom.Blockchain.Services
                 throw;
             }
         }
-
-        public async Task<bool> UpdateTokenBalanceAsync(string userId, decimal newBalance)
-        {
-            try
-            {
-                var wallet = await _context.UserWallets
-                    .FirstOrDefaultAsync(w => w.UserId == userId);
-
-                if (wallet == null)
-                {
-                    return false;
-                }
-
-                wallet.AtomTokenBalance = newBalance;
-                wallet.LastUpdated = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating token balance for user {UserId}", userId);
-                throw;
-            }
-        }
-
-        public async Task<bool> RefreshWalletBalancesAsync(string userId)
-        {
-            try
-            {
-                var wallet = await _context.UserWallets
-                    .FirstOrDefaultAsync(w => w.UserId == userId);
-
-                if (wallet == null)
-                {
-                    return false;
-                }
-
-                // In a real application, you would query the XRP Ledger for the current balance
-                // For now, we'll just update the timestamp
-                wallet.LastUpdated = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error refreshing wallet balances for user {UserId}", userId);
-                throw;
-            }
-        }
-
-        public async Task<bool> SetWalletActiveStatusAsync(string userId, bool active)
-        {
-            try
-            {
-                var wallet = await _context.UserWallets
-                    .FirstOrDefaultAsync(w => w.UserId == userId);
-
-                if (wallet == null)
-                {
-                    return false;
-                }
-
-                wallet.IsActive = active;
-                wallet.LastUpdated = DateTime.UtcNow;
-                await _context.SaveChangesAsync();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error updating wallet active status for user {UserId}", userId);
-                throw;
-            }
-        }
-
+        
         public async Task<bool> UpdateTotalRewardsClaimedAsync(string userId, decimal additionalRewards)
         {
             try

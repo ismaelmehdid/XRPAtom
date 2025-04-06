@@ -18,7 +18,10 @@ namespace XRPAtom.Infrastructure.Data
         public DbSet<UserWallet> UserWallets { get; set; }
         public DbSet<EventParticipation> EventParticipations { get; set; }
         public DbSet<MarketplaceTransaction> MarketplaceTransactions { get; set; }
-
+        public DbSet<EscrowDetail> EscrowDetails { get; set; }
+        public DbSet<RewardAllocation> RewardAllocations { get; set; }
+        public DbSet<RewardPayment> RewardPayments { get; set; }
+        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -152,6 +155,60 @@ namespace XRPAtom.Infrastructure.Data
                 .WithMany()
                 .HasForeignKey(m => m.SellerId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
+            modelBuilder.Entity<EscrowDetail>()
+                .HasIndex(e => e.EventId);
+            
+            modelBuilder.Entity<EscrowDetail>()
+                .HasIndex(e => e.ParticipantId);
+            
+            modelBuilder.Entity<EscrowDetail>()
+                .HasIndex(e => e.XummPayloadId);
+            
+            modelBuilder.Entity<EscrowDetail>()
+                .HasIndex(e => e.TransactionHash);
+        
+            modelBuilder.Entity<EscrowDetail>()
+                .HasOne(e => e.Event)
+                .WithMany()
+                .HasForeignKey(e => e.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            modelBuilder.Entity<RewardAllocation>()
+                .HasOne(ra => ra.Event)
+                .WithMany()
+                .HasForeignKey(ra => ra.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RewardAllocation>()
+                .HasOne(ra => ra.Participant)
+                .WithMany()
+                .HasForeignKey(ra => ra.ParticipantId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RewardAllocation>()
+                .Property(ra => ra.PotentialAmount)
+                .HasPrecision(18, 6);
+
+            modelBuilder.Entity<RewardAllocation>()
+                .Property(ra => ra.ActualAmount)
+                .HasPrecision(18, 6);
+
+            modelBuilder.Entity<RewardPayment>()
+                .HasOne(rp => rp.Event)
+                .WithMany()
+                .HasForeignKey(rp => rp.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RewardPayment>()
+                .HasOne(rp => rp.Participant)
+                .WithMany()
+                .HasForeignKey(rp => rp.ParticipantId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RewardPayment>()
+                .Property(rp => rp.Amount)
+                .HasPrecision(18, 6);
 
             // Apply configurations from separate configuration classes
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
