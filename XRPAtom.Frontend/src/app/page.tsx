@@ -77,9 +77,11 @@ export default function HomePage() {
                   </Link>
                 </Button>
               )}
+              {!isLoggedIn && (
               <Button variant="outline" asChild>
                 <Link href="/how-it-works">Learn How It Works</Link>
               </Button>
+              )}
             </div>
           </div>
         </div>
@@ -270,9 +272,11 @@ export default function HomePage() {
                   </div>
                 </li>
               </ul>
-              <Button className="mt-6" asChild>
-                <Link href="/signup">Join XRPAtom Today</Link>
-              </Button>
+              {!isLoggedIn && (
+                <Button className="mt-6" asChild>
+                  <Link href="/register">Join XRPAtom Today</Link>
+                </Button>
+              )}
             </div>
             <div className="bg-muted rounded-lg p-6">
               <div className="text-center mb-4">

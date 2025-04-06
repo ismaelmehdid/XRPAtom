@@ -1,7 +1,13 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
+import { useAuth } from "@/contexts/auth-context"
+import { ArrowRight, LogIn } from "lucide-react"
 import Link from "next/link"
 
 export default function AboutPage() {
+  const { isLoggedIn, login, isTSO, userData } = useAuth()
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-3xl mx-auto">
@@ -37,9 +43,19 @@ export default function AboutPage() {
         </div>
 
         <div className="mt-8">
-          <Button asChild>
-            <Link href="/dashboard">Get Started</Link>
-          </Button>
+        {isLoggedIn ? (
+                <Button asChild>
+                  <Link href="/dashboard">
+                    Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              ) : (
+                <Button asChild>
+                  <Link href="/login">
+                    Get Started <LogIn className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
         </div>
       </div>
     </div>
