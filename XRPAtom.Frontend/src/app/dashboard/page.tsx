@@ -2,16 +2,15 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { LiveEnergyUsage, LastYearConsumption } from "@/components/dashboard/energy-overview"
+import { LiveEnergyUsage } from "@/components/dashboard/energy-overview"
 import { CurtailmentEvents } from "@/components/dashboard/curtailment-events"
 import { DeviceStatus } from "@/components/dashboard/device-status"
 import { AddDeviceForm } from "@/components/dashboard/add-device-form"
-import { RewardsSummary } from "@/components/dashboard/rewards-summary"
 import { Button } from "@/components/ui/button"
 import { CalendarIcon } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { useState } from "react"
-import { Last30DaysConsumption, Last7DaysConsumption } from "@/components/dashboard/consumption-graphs"
+import { Last30DaysConsumption, Last7DaysConsumption, LastYearConsumption } from "@/components/dashboard/consumption-graphs"
 
 export default function DashboardPage() {
   const { isTSO } = useAuth()

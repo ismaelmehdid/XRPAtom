@@ -22,10 +22,10 @@ const generateDailyData = (date: Date) => {
     data.push({
       timestamp: new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour).getTime(),
       hour: hour,
-      baseline,
-      curtailed,
-      co2Saved: Math.floor((baseline - curtailed) * 0.4), // 0.4 kg CO2 per kWh saved (typical grid emission factor)
-      priceSaved: ((baseline - curtailed) * 0.12).toFixed(2) // $0.12 per kWh (typical residential rate)
+      baseline: Math.round(baseline),
+      curtailed: Math.round(curtailed),
+      co2Saved: Math.round((baseline - curtailed) * 0.4), // 0.4 kg CO2 per kWh saved
+      priceSaved: ((baseline - curtailed) * 0.12).toFixed(2) // $0.12 per kWh
     })
   }
   return data
@@ -44,9 +44,9 @@ const generate7DaysData = () => {
     // Aggregate daily data into a single point
     const aggregated = {
       date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      baseline: dailyData.reduce((sum, hour) => sum + hour.baseline, 0),
-      curtailed: dailyData.reduce((sum, hour) => sum + hour.curtailed, 0),
-      co2Saved: dailyData.reduce((sum, hour) => sum + hour.co2Saved, 0),
+      baseline: Math.round(dailyData.reduce((sum, hour) => sum + hour.baseline, 0)),
+      curtailed: Math.round(dailyData.reduce((sum, hour) => sum + hour.curtailed, 0)),
+      co2Saved: Math.round(dailyData.reduce((sum, hour) => sum + hour.co2Saved, 0)),
       priceSaved: dailyData.reduce((sum, hour) => sum + parseFloat(hour.priceSaved), 0).toFixed(2)
     }
     
@@ -69,9 +69,9 @@ const generate30DaysData = () => {
     // Aggregate daily data into a single point
     const aggregated = {
       date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      baseline: dailyData.reduce((sum, hour) => sum + hour.baseline, 0),
-      curtailed: dailyData.reduce((sum, hour) => sum + hour.curtailed, 0),
-      co2Saved: dailyData.reduce((sum, hour) => sum + hour.co2Saved, 0),
+      baseline: Math.round(dailyData.reduce((sum, hour) => sum + hour.baseline, 0)),
+      curtailed: Math.round(dailyData.reduce((sum, hour) => sum + hour.curtailed, 0)),
+      co2Saved: Math.round(dailyData.reduce((sum, hour) => sum + hour.co2Saved, 0)),
       priceSaved: dailyData.reduce((sum, hour) => sum + parseFloat(hour.priceSaved), 0).toFixed(2)
     }
     
@@ -100,9 +100,9 @@ const generateYearlyData = () => {
     // Aggregate monthly data
     const aggregated = {
       name: date.toLocaleDateString('en-US', { month: 'short' }),
-      baseline: monthData.reduce((sum, hour) => sum + hour.baseline, 0),
-      curtailed: monthData.reduce((sum, hour) => sum + hour.curtailed, 0),
-      co2Saved: monthData.reduce((sum, hour) => sum + hour.co2Saved, 0),
+      baseline: Math.round(monthData.reduce((sum, hour) => sum + hour.baseline, 0)),
+      curtailed: Math.round(monthData.reduce((sum, hour) => sum + hour.curtailed, 0)),
+      co2Saved: Math.round(monthData.reduce((sum, hour) => sum + hour.co2Saved, 0)),
       priceSaved: monthData.reduce((sum, hour) => sum + parseFloat(hour.priceSaved), 0).toFixed(2)
     }
     
