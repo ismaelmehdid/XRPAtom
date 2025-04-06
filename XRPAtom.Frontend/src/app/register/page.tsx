@@ -12,9 +12,20 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { toast } from "sonner"
+import { useAuth } from "@/contexts/auth-context"
+import LoginForm from "@/components/LoginForm"
 
 export default function RegisterPage() {
+  const { isLoggedIn } = useAuth()
+
+  if (isLoggedIn) {
+    return (
+      <LoginForm />
+    )
+  }
+
   const router = useRouter()
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",

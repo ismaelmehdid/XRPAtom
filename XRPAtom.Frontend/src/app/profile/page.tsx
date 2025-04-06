@@ -2,8 +2,21 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useAuth } from "@/contexts/auth-context"
+import LoginForm from "@/components/LoginForm"
 
 export default function ProfilePage() {
+  const { isLoggedIn, userData } = useAuth()
+
+  if (!isLoggedIn) {
+    return (
+      <LoginForm />
+    )
+  }
+
+  console.log(userData)
+  // /api/wallet/connect-xumm
+
   return (
     <div className="container mx-auto px-4 py-8">
       <Card className="max-w-2xl mx-auto">
