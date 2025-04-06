@@ -26,8 +26,8 @@ if __name__ == "__main__":
 
     dataset = PowerConsumptionDataset(config=config)
     models = {
-        "hourly": LSTMModel(input_size=5, hidden_size=40, dropout_rate=0.2, output_size=1),
-        "daily": LSTMModel(input_size=5, hidden_size=20, dropout_rate=0.3, output_size=1),
+        "hourly": LSTMModel(input_size=5, hidden_size=40, dropout_rate=0.2, output_size=24),
+        "daily": LSTMModel(input_size=5, hidden_size=20, dropout_rate=0.3, output_size=7),
     }
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size

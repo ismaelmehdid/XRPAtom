@@ -11,8 +11,8 @@ class LSTMModel(nn.Module):
 
     def forward(self, x):
         x = x.permute(0, 2, 1)
-        x, (_, _) = self.lstm(x)  # Only take the hidden state from the last time step
-        x = self.dropout(x)  # hn[-1] is the last layer's hidden state
+        _, (hn, _) = self.lstm(x)  # Only take the hidden state from the last time step
+        x = self.dropout(hn[-1])  # hn[-1] is the last layer's hidden state
         x = self.fc(x)
         return x
 

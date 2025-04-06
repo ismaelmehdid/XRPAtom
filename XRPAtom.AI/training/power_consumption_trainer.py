@@ -46,7 +46,7 @@ class PowerConsumptionTrainer:
                     self._optimizer_hourly_model.zero_grad()
                     features = features_labels[:, :, 0:(day + 2)*24]
                     labels = features_labels[:, 0, (day + 2)*24:(day + 3)*24].squeeze(1)
-                    outputs = self._hourly_model(features)[:, -24:, :].squeeze(2)
+                    outputs = self._hourly_model(features)
                     loss = self._criterion(outputs, labels)
                     loss.backward()
                     self._optimizer_hourly_model.step()
@@ -55,12 +55,11 @@ class PowerConsumptionTrainer:
                     self._optimizer_daily_model.zero_grad()
                     features = feature_labels_week[:, :, :(week + 2)*7]
                     labels = feature_labels_week[:, 0, (week + 2)*7:(week + 3)*7].squeeze(1)
-                    outputs = self._daily_model(features)[:, -7:, :].squeeze(2)
+                    outputs = self._daily_model(features)
                     loss = self._criterion(outputs, labels)
                     loss.backward()
                     self._optimizer_daily_model.step()
                     running_loss_daily_model += loss.item()
-                self._optimizer_daily_model.zero_grad()
             except Exception as e:
                 print(f"Error in training loop")
                 continue           

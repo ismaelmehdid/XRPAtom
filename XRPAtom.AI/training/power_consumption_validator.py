@@ -38,21 +38,17 @@ class PowerConsumptionValidator:
                     days_count = features_labels.shape[-1] / 24
                     week_count = days_count / 7
                     features = feature_labels_week[:, :, :int(week_count-1)*7]
-                    week_outputs = self._daily_model(features)[:, -7:, :].squeeze(2)
+                    week_outputs = self._daily_model(features)
                     for day in range(int(days_count)-7, int(days_count)-3):
                         features = features_labels[:, :, 0:(day + 2)*24]
                         labels = features_labels[:, 0, (day + 2)*24:(day + 3)*24].squeeze(1)
                         result_labels.append(labels)
-                        outputs = self._hourly_model(features)[:, -24:, :].squeeze(2)
+                        outputs = self._hourly_model(features)
                         result_outputs.append(outputs)
                         week_output_day = week_outputs[:, day - int(week_count-1)*7 ].unsqueeze(1).repeat(1, 24)
                         outputs = torch.sum(torch.concat([outputs.unsqueeze(2), week_output_day.unsqueeze(2)], dim=2) * self._weights, dim=2)
                         loss = self._criterion(outputs, labels)
                         running_loss += loss.item()
-                        print(labels)
-                        print(outputs)
-                        break
-                    break
                 except Exception as e:
                     print(f"Validation error")
                     continue
