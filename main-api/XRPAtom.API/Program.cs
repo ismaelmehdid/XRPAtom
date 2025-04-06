@@ -5,6 +5,8 @@ using XRPAtom.Blockchain;
 using XRPAtom.API.Configuration;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
+using XRPAtom.Infrastructure.BackgroundServices;
+using XUMM.NET.SDK;
 
 namespace XRPAtom.API
 {
@@ -75,19 +77,6 @@ namespace XRPAtom.API
             // Add JWT Authentication
             builder.Services.AddJwtAuthentication(builder.Configuration);
 
-            // Add CORS
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowNextJsApp", policy =>
-                {
-                    policy.WithOrigins(
-                            builder.Configuration["CorsOrigins:NextJsApp"] ?? "http://localhost:3000")
-                        .AllowAnyMethod()
-                        .AllowAnyHeader()
-                        .AllowCredentials();
-                });
-            });
-
             // Register Infrastructure services
             builder.Services.AddInfrastructureServices(builder.Configuration);
 
@@ -113,7 +102,10 @@ namespace XRPAtom.API
             }
 
             app.UseHttpsRedirection();
-            app.UseCors("AllowNextJsApp");
+            app.UseCors(builder => builder
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
 
             // Add Authentication and Authorization middleware
             app.UseAuthentication();
@@ -126,25 +118,19 @@ namespace XRPAtom.API
             {
                 try
                 {
-                    using (var scope = app.Services.CreateScope())
-                    {
-                        var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                    using var scope = app.Services.CreateScope();
+                    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
                         
-                        logger.LogInformation("Ensuring database is created with all tables...");
-                        // This will create the database and all tables based on your entity models
-                        dbContext.Database.EnsureCreated();
-                        logger.LogInformation("Database creation completed successfully");
-                    }
+                    logger.LogInformation("Ensuring database is created with all tables...");
+                    dbContext.Database.EnsureCreated();
+                    logger.LogInformation("Database creation completed successfully");
                 }
                 catch (Exception ex)
                 {
-                    using (var scope = app.Services.CreateScope())
-                    {
-                        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-                        logger.LogError(ex, "An error occurred while creating the database");
-                    }
-                    // Continue running the app even if database creation fails
+                    using var scope = app.Services.CreateScope();
+                    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while creating the database");
                 }
             }
 
