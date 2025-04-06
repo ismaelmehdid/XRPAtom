@@ -103,6 +103,24 @@ export function DeviceStatus() {
     }
   }
   
+  const handleDeleteClick = async (deviceId: string) => {
+    try {
+      const response = await fetchApi(`/devices/${deviceId}`, {
+        method: "DELETE",
+        body: JSON.stringify({ deviceId: deviceId }),
+      })
+  
+      if (response.error) {
+        toast.error("Failed to update curtailment level")
+        throw new Error(response.error)
+      }
+  
+      handleRefresh()
+  
+    } catch (error) {
+      console.error("Error updating curtailment level:", error)
+    }
+  }
 
   const handleRefresh = async () => {
     setDevices([])
@@ -129,8 +147,9 @@ export function DeviceStatus() {
       <CardContent>
         {renderDeviceContent(device)}
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex justify-between">
         {renderDeviceSettingsButton(device)}
+        {renderDeleteButton(device)}
       </CardFooter>
     </Card>
   )
@@ -250,13 +269,22 @@ export function DeviceStatus() {
   }  
   
   const renderDeviceSettingsButton = (device: Device) => (
-    <CardFooter>
-      <Button variant="outline" size="sm" className="w-full" onClick={() => handleSettingsClick(device)}>
-        <Settings className="mr-2 h-4 w-4" />
-        Device Settings
-      </Button>
-    </CardFooter>
-  )
+    <Button variant="outline" size="sm" onClick={() => handleSettingsClick(device)}>
+      <Settings className="mr-2 h-4 w-4" />
+      Device Settings
+    </Button>
+  )  
+
+  const renderDeleteButton = (device: Device) => (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="text-red-600 hover:text-red-700"
+      onClick={() => handleDeleteClick(device.id)}
+    >
+      Delete
+    </Button>
+  )  
 
   return (
     <div className="space-y-4">
