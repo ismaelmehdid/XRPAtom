@@ -12,7 +12,7 @@ class PowerConsumptionValidator:
         self._daily_model = models["daily"].to(self._device)
         self._config = config
         self._batch_size = self._config.get("batch_size", 32)
-        self._weights = torch.tensor([0.5, 0.5]).to(self._device)
+        self._weights = torch.tensor([0.9, 0.1]).to(self._device)
 
         self._val_loader = DataLoader(val_dataset, batch_size=self._batch_size, shuffle=False, num_workers=4)
         self._criterion = nn.MSELoss()
