@@ -209,6 +209,7 @@ export interface DeviceRegistration {
   enrolled: boolean
   curtailmentLevel: number
   location: string
-  preferences?: Record<string, any>
+  energyCapacity: number
+  preferences: string
 }
 

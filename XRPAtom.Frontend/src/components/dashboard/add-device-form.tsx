@@ -46,7 +46,7 @@ const deviceTypes: DeviceTypeOption[] = [
     value: "smart_plug",
     label: "Smart Plug",
     icon: <Plug className="h-5 w-5" />,
-    manufacturers: ["TP-Link Kasa", "Wemo", "Amazon", "Wyze", "Philips Hue"],
+    manufacturers: ["Meross", "Wemo", "Amazon", "Wyze", "Philips Hue"],
   },
   {
     value: "smart_light",
@@ -77,6 +77,9 @@ export function AddDeviceForm({ onDeviceAdded }: AddDeviceFormProps) {
     model: "",
     location: "",
     enrollImmediately: true,
+    curtailmentLevel: 0,
+    energyCapacity: 0,  
+    preferences: "", 
   })
 
   const handleTypeChange = (value: DeviceType) => {
@@ -84,6 +87,9 @@ export function AddDeviceForm({ onDeviceAdded }: AddDeviceFormProps) {
     setFormData((prev) => ({
       ...prev,
       manufacturer: "",
+      curtailmentLevel: 0,
+      energyCapacity: 0,    
+      preferences: "",
     }))
   }
 
@@ -95,42 +101,58 @@ export function AddDeviceForm({ onDeviceAdded }: AddDeviceFormProps) {
     }))
   }
 
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
+    const value = Number(e.target.value)
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedType || !userData) return
 
     setIsSubmitting(true)
 
+    const deviceData = {
+      userId: userData.id,
+      name: formData.name,
+      type: selectedType,
+      manufacturer: formData.manufacturer,
+      model: formData.model,
+      enrolled: formData.enrollImmediately,
+      curtailmentLevel: formData.curtailmentLevel,
+      location: formData.location,
+      energyCapacity: formData.energyCapacity,
+      preferences: formData.preferences,
+    }
+
     try {
-      const deviceData = {
-        userId: userData.id,
-        name: formData.name,
-        type: selectedType,
-        manufacturer: formData.manufacturer,
-        model: formData.model,
-        enrolled: formData.enrollImmediately,
-        curtailmentLevel: 3, // Default to maximum curtailment level
-        location: formData.location,
+      console.log("Registering device with data:", deviceData)
+      const status = await registerDevice(deviceData)
+      
+      console.log("Device registration status:", status)
+      if (status.error) {
+        throw new Error(status.error)
       }
-
-      //TODO: API Call to register device
-
       toast({
         title: "Device Added Successfully",
         description: `${formData.name} has been added to your account.`,
       })
 
-      // Reset form
       setFormData({
         name: "",
         manufacturer: "",
         model: "",
         location: "",
         enrollImmediately: true,
+        curtailmentLevel: 0,
+        energyCapacity: 0,
+        preferences: "",
       })
       setSelectedType(null)
 
-      // Notify parent component
       onDeviceAdded?.()
     } catch (error) {
       toast({
@@ -227,6 +249,44 @@ export function AddDeviceForm({ onDeviceAdded }: AddDeviceFormProps) {
                 />
               </div>
 
+              <div className="grid gap-2">
+                <Label htmlFor="curtailmentLevel">Curtailment Level (0-3)</Label>
+                <Input
+                  type="number"
+                  id="curtailmentLevel"
+                  name="curtailmentLevel"
+                  min={0}
+                  max={3}
+                  value={formData.curtailmentLevel}
+                  onChange={(e) => handleNumberChange(e, "curtailmentLevel")}
+                />
+              </div>
+
+              <div className="grid gap-2">
+              <Label htmlFor="energyCapacity">Energy Capacity (kWh)</Label>
+              <Input
+                type="number"
+                id="energyCapacity"
+                name="energyCapacity"
+                min={0}
+                max={100}
+                value={formData.energyCapacity}
+                onChange={(e) => handleNumberChange(e, "energyCapacity")}
+              />
+            </div>
+
+
+              <div className="grid gap-2">
+                <Label htmlFor="preferences">Preferences</Label>
+                <Input
+                  id="preferences"
+                  name="preferences"
+                  placeholder="e.g., Prefer night-time discharge"
+                  value={formData.preferences}
+                  onChange={handleInputChange}
+                />
+              </div>
+
               <div className="flex items-center space-x-2">
                 <Switch
                   id="enrollImmediately"
@@ -247,4 +307,5 @@ export function AddDeviceForm({ onDeviceAdded }: AddDeviceFormProps) {
     </Card>
   )
 }
+
 
