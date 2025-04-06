@@ -52,6 +52,7 @@ class PowerConsumptionValidator:
                         outputs = torch.sum(torch.concat([outputs.unsqueeze(2), week_output_day.unsqueeze(2)], dim=2) * self._weights, dim=2)
                         loss = self._criterion(outputs, labels)
                         running_loss += loss.item()
+                    break
                 except Exception as e:
                     print(f"Validation error")
                     continue
