@@ -73,7 +73,6 @@ export default function RegisterPage() {
       })
 
       const data = await response.json()
-      console.log(data)
 
       if (!response.ok) {
         toast.error(data.message || "Registration failed")

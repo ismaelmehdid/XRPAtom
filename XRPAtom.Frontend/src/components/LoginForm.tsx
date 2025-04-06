@@ -41,7 +41,6 @@ export default function LoginForm() {
     e.preventDefault()
     setIsLoading(true)
     setError("")
-    console.log(formData)
 
     try {
       const response = await fetch("https://api.zunix.systems/api/auth/login", {
@@ -56,8 +55,6 @@ export default function LoginForm() {
       })
 
       const data = await response.json()
-
-      console.log(data)
 
       if (!response.ok) {
         toast.error(data.message || "Login failed")

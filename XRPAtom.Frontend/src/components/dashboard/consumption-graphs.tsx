@@ -5,7 +5,6 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, Cart
 import { Leaf, Coins } from "lucide-react"
 import { last30DaysData, last7DaysData } from "./energy-data"
 import { yearlyData } from "./energy-data"
-import { NameType } from "recharts/types/component/DefaultTooltipContent"
 
 export function Last30DaysConsumption() {
   const totalCo2Saved = last30DaysData.reduce((sum, day) => sum + day.co2Saved, 0)

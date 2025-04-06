@@ -1,3 +1,5 @@
+"use client"
+
 import { jwtDecode } from "jwt-decode"
 
 interface TokenPayload {

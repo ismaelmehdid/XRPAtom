@@ -19,13 +19,16 @@ const generateDailyData = (date: Date) => {
     const savingsPercentage = 0.2 + (Math.random() * 0.1) // 20-30% savings
     const curtailed = baseline * (1 - savingsPercentage)
 
+    // Calculate CO2 savings (0.4 kg CO2 per kWh saved)
+    const co2Saved = (baseline - curtailed) * 0.4
+
     data.push({
       timestamp: new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour).getTime(),
       hour: hour,
-      baseline,
-      curtailed,
-      co2Saved: Math.floor((baseline - curtailed) * 0.4), // 0.4 kg CO2 per kWh saved (typical grid emission factor)
-      priceSaved: ((baseline - curtailed) * 0.12).toFixed(2) // $0.12 per kWh (typical residential rate)
+      baseline: Math.ceil(baseline),
+      curtailed: Math.ceil(curtailed),
+      co2Saved: Math.ceil(co2Saved), // Round up CO2 savings
+      priceSaved: ((baseline - curtailed) * 0.12).toFixed(2) // $0.12 per kWh
     })
   }
   return data
@@ -44,9 +47,9 @@ const generate7DaysData = () => {
     // Aggregate daily data into a single point
     const aggregated = {
       date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      baseline: dailyData.reduce((sum, hour) => sum + hour.baseline, 0),
-      curtailed: dailyData.reduce((sum, hour) => sum + hour.curtailed, 0),
-      co2Saved: dailyData.reduce((sum, hour) => sum + hour.co2Saved, 0),
+      baseline: Math.ceil(dailyData.reduce((sum, hour) => sum + hour.baseline, 0)),
+      curtailed: Math.ceil(dailyData.reduce((sum, hour) => sum + hour.curtailed, 0)),
+      co2Saved: Math.ceil(dailyData.reduce((sum, hour) => sum + hour.co2Saved, 0)),
       priceSaved: dailyData.reduce((sum, hour) => sum + parseFloat(hour.priceSaved), 0).toFixed(2)
     }
     
@@ -69,9 +72,9 @@ const generate30DaysData = () => {
     // Aggregate daily data into a single point
     const aggregated = {
       date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-      baseline: dailyData.reduce((sum, hour) => sum + hour.baseline, 0),
-      curtailed: dailyData.reduce((sum, hour) => sum + hour.curtailed, 0),
-      co2Saved: dailyData.reduce((sum, hour) => sum + hour.co2Saved, 0),
+      baseline: Math.ceil(dailyData.reduce((sum, hour) => sum + hour.baseline, 0)),
+      curtailed: Math.ceil(dailyData.reduce((sum, hour) => sum + hour.curtailed, 0)),
+      co2Saved: Math.ceil(dailyData.reduce((sum, hour) => sum + hour.co2Saved, 0)),
       priceSaved: dailyData.reduce((sum, hour) => sum + parseFloat(hour.priceSaved), 0).toFixed(2)
     }
     
@@ -100,9 +103,9 @@ const generateYearlyData = () => {
     // Aggregate monthly data
     const aggregated = {
       name: date.toLocaleDateString('en-US', { month: 'short' }),
-      baseline: monthData.reduce((sum, hour) => sum + hour.baseline, 0),
-      curtailed: monthData.reduce((sum, hour) => sum + hour.curtailed, 0),
-      co2Saved: monthData.reduce((sum, hour) => sum + hour.co2Saved, 0),
+      baseline: Math.ceil(monthData.reduce((sum, hour) => sum + hour.baseline, 0)),
+      curtailed: Math.ceil(monthData.reduce((sum, hour) => sum + hour.curtailed, 0)),
+      co2Saved: Math.ceil(monthData.reduce((sum, hour) => sum + hour.co2Saved, 0)),
       priceSaved: monthData.reduce((sum, hour) => sum + parseFloat(hour.priceSaved), 0).toFixed(2)
     }
     

@@ -6,6 +6,8 @@ import { useAuth } from "@/contexts/auth-context"
 import LoginForm from "@/components/LoginForm"
 import { fetchApi } from "@/lib/api"
 import { toast } from "sonner"
+import { getAuthToken } from "@/lib/auth"
+import { useEffect } from "react"
 
 interface WalletConnectionResponse {
   deepLink: string
@@ -22,8 +24,37 @@ export default function ProfilePage() {
     )
   }
 
-  console.log(userData)
-  // /api/wallet/connect-xumm
+  const token = getAuthToken()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetchApi("/wallet/verify-xumm-connection", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            "payloadId": localStorage.getItem("xumm_uuid"),
+          }),
+        });
+
+        if (response.error) {
+          console.log("finished checking xumm connection");
+          return;
+        }
+
+        console.log("validated signature");
+      } catch (error) {
+        console.error("Error loading profile data:", error);
+      }
+    }
+
+    if (isLoggedIn) {
+      fetchData();
+    }
+  }, [isLoggedIn, token]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -41,16 +72,22 @@ export default function ProfilePage() {
             <Button variant="default" onClick={async () => {
               try {
                 const response = await fetchApi<WalletConnectionResponse>("/wallet/connect-xumm", {
-                  method: "POST"
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                  },
                 });
-                                
+
                 if (response.error) {
                   console.error("Failed to connect wallet:", response.error);
                   return;
                 }
 
                 if (response.data) {
-                  // TODO: Open the qr code link in a new tab 
+                  // TODO: Open the qr code link in a new tab
+                  localStorage.setItem("xumm_uuid", response.data.uuid);
+
                   window.open(response.data.deepLink, "_blank");
                   console.log("Wallet connection initiated:", response.data);
 
