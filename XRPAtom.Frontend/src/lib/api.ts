@@ -10,6 +10,57 @@ type ApiResponse<T> = {
 /**
  * Base function for making API requests to the C# backend
  */
+export async function fetchPlugApi<T>(
+  device: Device,
+  options: RequestInit = {}
+): Promise<ApiResponse<T>> {
+  if (!device) {
+    return { error: "Device is not defined" }
+  }
+
+  const isSupported =
+    device.manufacturer === "Meross" &&
+    device.type === "smart_plug" &&
+    device.model === "MSS210"
+
+  if (!isSupported) {
+    return { error: "Device is not supported" }
+  }
+
+  let endpoint = ""
+  if (device.status === "Offline") {
+    endpoint = "/turn_off"
+  } else if (device.status === "Online") {
+    endpoint = "/turn_on"
+  } else {
+    return { error: "Unsupported device status" }
+  }
+
+  const url = `https://wss.zunix.systems/device${endpoint}`
+
+  console.log("Making request to:", url)
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return { error: errorData.message || "An error occurred" }
+    }
+
+    const data = await response.json()
+    return { data }
+  } catch (error) {
+    console.error("API request failed:", error)
+    return { error: "Failed to connect to the server" }
+  }
+}
+
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.zunix.systems/api"
   const url = `${apiUrl}${endpoint}`
@@ -138,7 +189,7 @@ export interface Device {
   type: string
   manufacturer: string
   model: string
-  status: "online" | "offline"
+  status: string
   enrolled: boolean
   curtailmentLevel: number
   lastSeen: string,

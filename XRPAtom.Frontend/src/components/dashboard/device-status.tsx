@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
 import { Thermometer, Droplet, Car, Plug, Lightbulb, Battery, Settings, RefreshCw } from "lucide-react"
-import { Device, fetchApi, getUserDevices } from "@/lib/api"
+import { Device, fetchApi, fetchPlugApi, getUserDevices } from "@/lib/api"
 import { DeviceType } from "./add-device-form"
 import { toast } from "sonner"
 
@@ -158,26 +158,99 @@ export function DeviceStatus() {
     <div>
       <CardTitle className="flex items-center">{device.name}</CardTitle>
       <CardDescription>{device.location}</CardDescription>
-      <Badge variant={device.status === "online" ? "default" : "outline"}>{device.status}</Badge>
+      <Badge variant={device.status === "Online" ? "default" : "outline"}>{device.status}</Badge>
     </div>
   )
 
-  const renderDeviceContent = (device: Device) => (
-    <>
-      <div className="flex justify-center py-4">
-        <div className="rounded-full bg-muted p-6">
-          {deviceIcons[device.type.toLowerCase() as DeviceType]}
+  const handleTurnClick = async (device: Device, status: string) => {
+    device.status = status
+    try {
+      const response = await fetchApi(`/devices/${device.id}`, {
+        method: "PUT",
+        body: JSON.stringify(device),
+      })
+  
+      if (response.error) {
+        toast.error("Failed to update curtailment level")
+        throw new Error(response.error)
+      }
+  
+      handleRefresh()
+      try {
+        const response = await fetchPlugApi(device)
+    
+        if (response.error) {
+          throw new Error(response.error)
+        }
+    
+      } catch (error) {
+        console.error("Error updating device status:", error)
+      }
+    } catch (error) {
+      console.error("Error updating curtailment level:", error)
+    }
+  }
+
+  const renderDeviceContent = (device: Device) => {
+  
+    const isOnline = device.status === "Online";
+    const hoverText = isOnline ? "Turn Off" : "Turn On";
+  
+    return (
+      <>
+        <div className="flex justify-center py-4 relative">
+          {/* Glowing pulsing background */}
+          <div
+            className={`absolute w-24 h-24 rounded-full z-0 ${
+              isOnline ? "bg-green-400/30" : "bg-red-400/30"
+            }`}
+            style={{
+              animation: "pulse 3s ease-in-out infinite",
+            }}
+          />
+  
+          {/* Icon as button with hover tooltip */}
+          <div className="relative group z-10">
+            <button
+              onClick={async () => handleTurnClick(device, isOnline ? "Offline" : "Online")}
+              className="rounded-full bg-muted p-6 relative focus:outline-none hover:scale-105 transition-transform"
+            >
+              {deviceIcons[device.type.toLowerCase() as DeviceType]}
+            </button>
+  
+            {/* Tooltip on hover */}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 text-sm rounded bg-gray-700 text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
+              {hoverText}
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="space-y-4 mt-4">
-        {renderEnrollmentSwitch(device)}
-        {device.enrolled && device.status === "online" && renderCurtailmentLevel(device)}
-      </div>
-      <div className="space-y-4 mt-4">
-        {renderCurtailmentLevel(device)}
-      </div>
-    </>
-  )
+  
+        <div className="space-y-4 mt-4">
+          {renderEnrollmentSwitch(device)}
+          {device.enrolled && isOnline && renderCurtailmentLevel(device)}
+        </div>
+  
+        {/* Pulse keyframes */}
+        <style>
+          {`
+            @keyframes pulse {
+              0%, 100% {
+                transform: scale(1);
+                opacity: 0.4;
+              }
+              50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+              }
+            }
+          `}
+        </style>
+      </>
+    );
+  };
+  
+   
+  
 
   const renderEnrollmentSwitch = (device: Device) => (
     <div className="flex items-center justify-between">
