@@ -6,10 +6,9 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Slider } from "@/components/ui/slider"
 import { Thermometer, Droplet, Car, Plug, Lightbulb, Battery, Settings, RefreshCw } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
-import { Device, getUserDevices } from "@/lib/api"
+import { Device, fetchApi, getUserDevices } from "@/lib/api"
 import { DeviceType } from "./add-device-form"
-import { useAuth } from "@/contexts/auth-context"
+import { toast } from "sonner"
 
 const deviceIcons: Record<DeviceType, React.ReactNode> = {
   thermostat: <Thermometer className="h-8 w-8" />,
@@ -38,7 +37,6 @@ const convertToDeviceArray = (data: any[]): Device[] => data.map(item => ({
 }))
 
 export function DeviceStatus() {
-  const { toast } = useToast()
   const [devices, setDevices] = useState<Device[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -66,16 +64,48 @@ export function DeviceStatus() {
     fetchDevices()
   }, [])
 
-  const handleEnrollmentChange = (deviceId: string, enrolled: boolean) => {
-    setDevices(devices.map(device => device.id === deviceId ? { ...device, enrolled } : device))
+  const handleEnrollmentChange = async (deviceId: string, enrolled: boolean) => {
+    try {
+      const status = await fetchApi(`/devices/${deviceId}/enrollment`, {
+        method: "PATCH",
+        body: JSON.stringify({ enrolled }),
+      })
+  
+      if (status.error) {
+        toast.error("Failed to update enrollment status")
+        throw new Error(status.error)
+      }
+  
+      setDevices(devices.map(device => device.id === deviceId ? { ...device, enrolled } : device))
+  
+    } catch (error) {
+      console.error("Error updating enrollment status:", error)
+    }
   }
+  
 
-  const handleCurtailmentLevelChange = (deviceId: string, level: number) => {
-    setDevices(devices.map(device => device.id === deviceId ? { ...device, curtailmentLevel: level } : device))
+  const handleCurtailmentLevelChange = async (deviceId: string, level: number) => {
+    try {
+      const response = await fetchApi(`/devices/${deviceId}/curtailment`, {
+        method: "PATCH",
+        body: JSON.stringify({ curtailmentLevel: level }),
+      })
+  
+      if (response.error) {
+        toast.error("Failed to update curtailment level")
+        throw new Error(response.error)
+      }
+  
+      setDevices(devices.map(device => device.id === deviceId ? { ...device, curtailmentLevel: level } : device))
+  
+    } catch (error) {
+      console.error("Error updating curtailment level:", error)
+    }
   }
+  
 
   const handleRefresh = async () => {
-    setDevices([]) // Очистить список устройств при обновлении
+    setDevices([])
     setIsLoading(true)
     await fetchDevices()
   }
@@ -123,6 +153,9 @@ export function DeviceStatus() {
       <div className="space-y-4 mt-4">
         {renderEnrollmentSwitch(device)}
         {device.enrolled && device.status === "online" && renderCurtailmentLevel(device)}
+      </div>
+      <div className="space-y-4 mt-4">
+        {renderCurtailmentLevel(device)}
       </div>
     </>
   )
@@ -232,7 +265,7 @@ export function DeviceStatus() {
       <div className="grid gap-4">
         {devices.length ? devices.map(renderDevice) : <div>No devices found</div>}
       </div>
-      {isSettingsOpen && renderDeviceSettingsModal()} {/* Показываем модальное окно, если оно открыто */}
+      {isSettingsOpen && renderDeviceSettingsModal()}
     </div>
   )
 }
