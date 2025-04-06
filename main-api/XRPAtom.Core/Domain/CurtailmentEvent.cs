@@ -37,10 +37,10 @@ namespace XRPAtom.Core.Domain
         public string CreatedBy { get; set; } // User ID who created the event
         
         [StringLength(200)]
-        public string BlockchainReference { get; set; } // Reference to blockchain record
+        public string? BlockchainReference { get; set; } // Reference to blockchain record
         
         [StringLength(500)]
-        public string VerificationProof { get; set; } // Verification proof for the event
+        public string? VerificationProof { get; set; } // Verification proof for the event
         
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         

@@ -5,7 +5,9 @@ using XRPAtom.Blockchain;
 using XRPAtom.API.Configuration;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
+using XRPAtom.BackgroundServices;
 using XRPAtom.Infrastructure.BackgroundServices;
+using XUMM.NET.SDK;
 
 namespace XRPAtom.API
 {
@@ -81,7 +83,9 @@ namespace XRPAtom.API
 
             // Register Blockchain services
             builder.Services.AddBlockchainServices(builder.Configuration);
-
+            builder.Services.AddXummNet(builder.Configuration);
+            builder.Services.AddHostedService<CurtailmentOracleService>();
+            builder.Services.AddHostedService<EscrowMonitorService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline

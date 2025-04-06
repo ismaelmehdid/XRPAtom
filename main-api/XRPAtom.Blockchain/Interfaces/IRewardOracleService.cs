@@ -76,28 +76,7 @@ namespace XRPAtom.Blockchain.Interfaces
         /// </summary>
         public Dictionary<string, object> AdditionalCriteria { get; set; }
     }
-
-    /// <summary>
-    /// Represents the result of creating a reward pool
-    /// </summary>
-    public class RewardPoolCreationResult
-    {
-        /// <summary>
-        /// Unique identifier for the created reward pool
-        /// </summary>
-        public string PoolId { get; set; }
-
-        /// <summary>
-        /// Transaction hash of the pool creation on the XRP Ledger
-        /// </summary>
-        public string TransactionHash { get; set; }
-
-        /// <summary>
-        /// Total amount of rewards in the pool
-        /// </summary>
-        public decimal TotalAmount { get; set; }
-    }
-
+    
     /// <summary>
     /// Represents the result of participation verification
     /// </summary>

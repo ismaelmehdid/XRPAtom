@@ -2,6 +2,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using XRPAtom.Blockchain.Interfaces;
 using XRPAtom.Blockchain.Services;
+using XRPAtom.Core.Interfaces;
+using XRPAtom.Infrastructure.BackgroundServices;
 
 namespace XRPAtom.Blockchain
 {
@@ -40,12 +42,15 @@ namespace XRPAtom.Blockchain
             services.AddScoped<IXRPLedgerService, XRPLedgerService>();
             services.AddScoped<IXamanService, XamanService>();
             services.AddScoped<IBlockchainVerificationService, BlockchainVerificationService>();
+            services.AddScoped<IBlockchainEventListener, BlockchainEventListener>();
             
             // Add the UserWalletService
             services.AddScoped<IUserWalletService, UserWalletService>();
-
-            // Register background service for blockchain event monitoring
-            //services.AddHostedService<XRPLedgerEventMonitor>();
+            services.AddScoped<IEscrowService, EscrowService>();
+            
+            // Register background services
+            // Register other background services as needed
+            // services.AddHostedService<XRPLedgerEventMonitor>();
 
             return services;
         }

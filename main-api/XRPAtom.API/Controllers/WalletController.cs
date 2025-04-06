@@ -1,8 +1,13 @@
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using XRPAtom.Blockchain.Interfaces;
 using XRPAtom.Core.DTOs;
 using System.Text.Json;
+using XRPAtom.Core.Interfaces;
+using XUMM.NET.SDK.Clients.Interfaces;
+using XUMM.NET.SDK.Models.Misc;
+using XUMM.NET.SDK.Models.Payload;
 
 namespace XRPAtom.API.Controllers
 {
@@ -14,13 +19,16 @@ namespace XRPAtom.API.Controllers
         private readonly IUserWalletService _userWalletService;
         private readonly IXRPLedgerService _xrplService;
         private readonly ILogger<WalletController> _logger;
+        private readonly IXummPayloadClient _xummPayloadClient;
 
         public WalletController(
             IUserWalletService userWalletService,
             IXRPLedgerService xrplService,
+            IXummPayloadClient xummPayloadClient,
             ILogger<WalletController> logger)
         {
             _userWalletService = userWalletService;
+            _xummPayloadClient = xummPayloadClient;
             _xrplService = xrplService;
             _logger = logger;
         }
@@ -62,8 +70,8 @@ namespace XRPAtom.API.Controllers
             }
         }
         
-        [HttpPost]
-        public async Task<IActionResult> CreateWallet()
+        [HttpPost("connect-xumm")]
+        public async Task<IActionResult> ConnectXummWallet()
         {
             try
             {
@@ -80,35 +88,57 @@ namespace XRPAtom.API.Controllers
                     return BadRequest(new { error = "User already has a wallet" });
                 }
 
-                // Generate a new wallet on the XRP Ledger
-                var walletJson = await _xrplService.GenerateWallet();
-                var walletData = JsonSerializer.Deserialize<dynamic>(walletJson);
+                // Create a unique identifier for this connection attempt
+                string connectionIdentifier = $"xrpatom_connect_{userId}";
 
-                string address = walletData.GetProperty("address").GetString();
-                string publicKey = walletData.GetProperty("publicKey").GetString();
-                string secret = walletData.GetProperty("secret").GetString();
+                // Create a simple Sign In transaction JSON
+                // Note: This is a minimal Sign In transaction that XUMM can process
+                var txJson = JsonSerializer.Serialize(new
+                {
+                    TransactionType = "SignIn",
+                    SignInFor = "XRPAtom Wallet Linking",
+                    Identifier = connectionIdentifier,
+                    Instruction = "Sign to access XRPAtom"
+                });
 
-                // Store the wallet in our database (but NOT the secret!)
-                var createdWallet = await _userWalletService.CreateWalletAsync(userId, address);
+                // Create the payload with the transaction JSON
+                var payload = new XummPostJsonPayload(txJson)
+                {
+                    Options = new XummPayloadOptions
+                    {
+                        ReturnUrl = new XummPayloadReturnUrl
+                        {
+                            Web = "https://app.zunix.systems",
+                            App = "https://app.zunix.systems"
+                        },
+                        Submit = false,
+                        Expire = 300
+                    }
+                };
 
-                // Return wallet information including the secret (only at creation time)
+                var response = await _xummPayloadClient.CreateAsync(payload, throwError: true);
+
                 return Ok(new
                 {
-                    address,
-                    publicKey,
-                    secret, // Only returned during wallet creation
-                    message = "Wallet created successfully. Save your secret key securely!"
+                    qrUrl = response.Refs.QrPng,
+                    deepLink = response.Next.Always,
+                    uuid = response.Uuid
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error creating wallet");
-                return StatusCode(500, new { error = "An error occurred while creating the wallet" });
+                _logger.LogError(ex, "Error creating XUMM connection payload");
+                return StatusCode(500, new { error = "An error occurred while connecting with XUMM" });
             }
         }
-
-        [HttpPost("import")]
-        public async Task<IActionResult> ImportWallet([FromBody] WalletImportDto request)
+        
+        public class VerifyXummConnectionRequest
+        {
+            public string PayloadId { get; set; }
+        }
+        
+        [HttpPost("verify-xumm-connection")]
+        public async Task<IActionResult> VerifyXummConnection([FromBody] VerifyXummConnectionRequest request)
         {
             try
             {
@@ -118,84 +148,47 @@ namespace XRPAtom.API.Controllers
                     return BadRequest(new { error = "Invalid user identifier" });
                 }
 
-                // Check if user already has a wallet
-                var existingWallet = await _userWalletService.GetWalletByUserIdAsync(userId);
-                if (existingWallet != null)
+                // Retrieve the payload details
+                var payloadDetails = await _xummPayloadClient.GetAsync(request.PayloadId, throwError: true);
+                
+                if (payloadDetails == null)
                 {
-                    return BadRequest(new { error = "User already has a wallet" });
+                    return BadRequest(new { error = "Invalid payload" });
                 }
 
-                // Validate the address format
-                if (!IsValidXrpAddress(request.Address))
+                // Check if payload is resolved (signed)
+                if (!payloadDetails.Meta.Resolved)
                 {
-                    return BadRequest(new { error = "Invalid XRP address format" });
+                    return BadRequest(new { error = "Payload not yet signed" });
+                }
+                
+                // Verify the payload's custom identifier
+                string expectedConnectionIdentifier = $"xrpatom_connect_{userId}";
+                
+                var parsed_json_request = JsonSerializer.Deserialize<JsonElement>(payloadDetails.Payload.RequestJson);
+                // Check if the custom meta identifier matches
+                if (parsed_json_request.GetProperty("Identifier").GetString() != expectedConnectionIdentifier)
+                {
+                    return BadRequest(new { error = "Invalid connection identifier" });
                 }
 
-                // Verify that the address exists on the ledger
-                try
-                {
-                    await _xrplService.GetAccountInfo(request.Address);
-                }
-                catch
-                {
-                    return BadRequest(new { error = "Unable to verify the XRP address on the ledger" });
-                }
+                // Get the wallet address from the signed payload
+                var walletAddress = payloadDetails.Response.Account;
 
-                // Store the wallet in our database
-                var createdWallet = await _userWalletService.CreateWalletAsync(userId, request.Address);
+                // Create a wallet for the user with this address
+                var wallet = await _userWalletService.CreateWalletAsync(userId, walletAddress);
 
-                return Ok(new { address = request.Address, message = "Wallet imported successfully" });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error importing wallet");
-                return StatusCode(500, new { error = "An error occurred while importing the wallet" });
-            }
-        }
-
-        [HttpGet("balance")]
-        public async Task<IActionResult> GetWalletBalance()
-        {
-            try
-            {
-                var userId = User.FindFirst("userId")?.Value;
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return BadRequest(new { error = "Invalid user identifier" });
-                }
-
-                // Refresh the wallet balances from the ledger
-                var success = await _userWalletService.RefreshWalletBalancesAsync(userId);
-                if (!success)
-                {
-                    return NotFound(new { error = "Wallet not found or error refreshing balances" });
-                }
-
-                // Get the updated wallet
-                var wallet = await _userWalletService.GetWalletByUserIdAsync(userId);
-
-                return Ok(new
-                {
-                    balance = wallet.Balance,
-                    atomTokenBalance = wallet.AtomTokenBalance,
-                    address = wallet.Address,
-                    lastUpdated = wallet.LastUpdated
+                return Ok(new { 
+                    success = true, 
+                    address = walletAddress,
+                    message = "Xuman wallet connected successfully" 
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error retrieving wallet balance");
-                return StatusCode(500, new { error = "An error occurred while retrieving the wallet balance" });
+                _logger.LogError(ex, "Error verifying XUMM connection");
+                return StatusCode(500, new { error = "An error occurred while verifying XUMM connection" });
             }
-        }
-
-        private bool IsValidXrpAddress(string address)
-        {
-            // This is a simplified validation - in production, use a proper XRPL library validation
-            return !string.IsNullOrEmpty(address) && 
-                   address.StartsWith("r") && 
-                   address.Length >= 25 && 
-                   address.Length <= 35;
         }
     }
 }

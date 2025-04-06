@@ -44,12 +44,12 @@ namespace XRPAtom.Core.Domain
         
         public uint? Sequence { get; set; } // XRPL sequence number
         
-        public string RelatedEntityId { get; set; } // ID of related entity (e.g., CurtailmentEvent)
+        public string? RelatedEntityId { get; set; } // ID of related entity (e.g., CurtailmentEvent)
         
         [StringLength(50)]
-        public string RelatedEntityType { get; set; } // Type of related entity
+        public string? RelatedEntityType { get; set; } // Type of related entity
         
         [StringLength(4000)]
-        public string RawResponse { get; set; } // Full response from XRPL
+        public string? RawResponse { get; set; } // Full response from XRPL
     }
 }

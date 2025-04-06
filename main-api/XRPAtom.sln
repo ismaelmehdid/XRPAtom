@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XRPAtom.Infrastructure", "X
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XRPAtom.Blockchain", "XRPAtom.Blockchain\XRPAtom.Blockchain.csproj", "{101970A6-F4E1-4529-AFC7-F4DD4B2F2916}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XRPAtom.BackgroundServices", "XRPAtom.BackgroundServices\XRPAtom.BackgroundServices.csproj", "{93650E63-5260-4B8F-B8FF-69FB7F172BF6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,7 @@ Global
 		{F11840F5-8022-466C-9494-AA1655127166} = {275334EF-E4D0-423E-BC78-E11F9D8C71E6}
 		{6490864A-1AC9-43AC-9EA2-A5AB3BD2AA3D} = {275334EF-E4D0-423E-BC78-E11F9D8C71E6}
 		{101970A6-F4E1-4529-AFC7-F4DD4B2F2916} = {275334EF-E4D0-423E-BC78-E11F9D8C71E6}
+		{93650E63-5260-4B8F-B8FF-69FB7F172BF6} = {275334EF-E4D0-423E-BC78-E11F9D8C71E6}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{5CD0E85E-D465-44F2-B326-17620D709FF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -38,5 +41,9 @@ Global
 		{101970A6-F4E1-4529-AFC7-F4DD4B2F2916}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{101970A6-F4E1-4529-AFC7-F4DD4B2F2916}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{101970A6-F4E1-4529-AFC7-F4DD4B2F2916}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93650E63-5260-4B8F-B8FF-69FB7F172BF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93650E63-5260-4B8F-B8FF-69FB7F172BF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93650E63-5260-4B8F-B8FF-69FB7F172BF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93650E63-5260-4B8F-B8FF-69FB7F172BF6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
