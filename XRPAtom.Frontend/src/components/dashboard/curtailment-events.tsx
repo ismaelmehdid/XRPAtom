@@ -6,54 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "../ui/button"
+import { fetchApi } from "@/lib/api"
 
-const mockEvents = [
-  {
-    id: "EVT-1234",
-    date: "2023-04-01",
-    time: "14:00-16:00",
-    duration: "2 hours",
-    energySaved: "2.5 kWh",
-    reward: "5.2 XRP",
-    status: "completed",
-  },
-  {
-    id: "EVT-1235",
-    date: "2023-04-05",
-    time: "17:30-19:30",
-    duration: "2 hours",
-    energySaved: "3.1 kWh",
-    reward: "6.8 XRP",
-    status: "completed",
-  },
-  {
-    id: "EVT-1236",
-    date: "2023-04-10",
-    time: "13:00-15:00",
-    duration: "2 hours",
-    energySaved: "1.8 kWh",
-    reward: "3.5 XRP",
-    status: "completed",
-  },
-  {
-    id: "EVT-1237",
-    date: "2023-04-15",
-    time: "18:00-20:00",
-    duration: "2 hours",
-    energySaved: "0 kWh",
-    reward: "0 XRP",
-    status: "missed",
-  },
-  {    
-    id: "EVT-1238",
-    date: "2023-04-22",
-    time: "15:00-17:00",
-    duration: "2 hours",
-    energySaved: "2.9 kWh",
-    reward: "6.1 XRP",
-    status: "completed",
-  },
-]
 
 export function CurtailmentEvents() {
   const [events, setEvents] = useState([]);
@@ -91,21 +45,31 @@ export function CurtailmentEvents() {
   useEffect(() => {
     async function fetchEvents() {
       try {
-        const response = await fetch("https://api.zunix.systems/api/curtailment-events", {
+        const response = await fetchApi(`/curtailment-events`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             "Accept": "application/json",
           },
-          credentials: "include"
         });
 
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+        if (response.error) {
+          throw new Error(response.error)
         }
 
-        const data = await response.json();
-        setEvents(data.events);
+        const data = await response.data
+        if (!Array.isArray(data)) {
+          return new Error("Invalid data format");
+        }
+        let events = [];
+        events = data.map((event) => ({
+            date: event.date,
+            duration: event.duration,
+            energySaved: event.energySaved,
+            status: event.status,
+          }));
+        console.log("Fetched events:", events);
+        //setEvents(events);
       } catch (error) {
         toast.error('Error fetching events:');
       } finally {
