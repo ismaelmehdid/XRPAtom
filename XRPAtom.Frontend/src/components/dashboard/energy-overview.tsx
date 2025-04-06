@@ -1,7 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid, TooltipProps } from "recharts"
+import { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent"
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 
 const data = [
   {
@@ -64,7 +66,6 @@ export function LiveEnergyUsage() {
       console.log("✅ WebSocket connected");
     };
 
-
     web_socket.onmessage = (event) => {
       try {
         const newData = JSON.parse(event.data);
@@ -72,7 +73,7 @@ export function LiveEnergyUsage() {
         setLiveData((prevData) => {
           const updatedData = [...prevData];
           if (updatedData.length >= 60) updatedData.shift();
-          updatedData.push(newData); // <- ou newData.consumption si c’est un objet
+          updatedData.push(newData);
           return updatedData;
         });
       } catch (err) {
@@ -84,29 +85,33 @@ export function LiveEnergyUsage() {
       console.log("WebSocket connection closed");
     };
 
-    web_socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
-
   }, []);
 
   return (
-    <ResponsiveContainer width="100%" height={350}>
-      <BarChart data={liveData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <YAxis
-          stroke="#888888"
-          fontSize={12}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={(value) => `${value} kWh`}
-        />
-        <Tooltip
-          formatter={(value) => [`${value} kWh`]}
-        />
-        <Bar name="Energy Curtailed" dataKey="consumption" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+    <Card>
+      <CardHeader>
+        <CardTitle>Live Energy Usage</CardTitle>
+        <CardDescription>Real-time energy consumption monitoring</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={350}>
+          <BarChart data={liveData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <YAxis
+              stroke="#888888"
+              fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(value) => `${value} kWh`}
+            />
+            <Tooltip
+              formatter={(value) => [`${value} kWh`]}
+            />
+            <Bar name="Energy Curtailed" dataKey="consumption" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -140,4 +145,3 @@ export function EnergyOverview() {
     </ResponsiveContainer>
   )
 }
-

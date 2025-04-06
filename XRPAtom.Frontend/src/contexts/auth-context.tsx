@@ -3,7 +3,9 @@
 import { removeAuthToken, setAuthToken, getAuthToken, isTokenValid, getTokenPayload } from "@/lib/auth"
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
-export type UserRole = "tso" | "residential"
+// 0. RESIDENTIAL
+// 1. TSO
+export type UserRole = "0" | "1"
 
 interface UserData {
   id: string
@@ -74,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const userRole = userData?.role || null
-  const isTSO = userRole === "tso"
+  const isTSO = userRole === "1"
 
   return (
     <AuthContext.Provider
