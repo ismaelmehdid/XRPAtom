@@ -2,7 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { EnergyOverview, LiveEnergyUsage } from "@/components/dashboard/energy-overview"
+import { LiveEnergyUsage, LastYearConsumption } from "@/components/dashboard/energy-overview"
 import { CurtailmentEvents } from "@/components/dashboard/curtailment-events"
 import { DeviceStatus } from "@/components/dashboard/device-status"
 import { AddDeviceForm } from "@/components/dashboard/add-device-form"
@@ -11,10 +11,13 @@ import { Button } from "@/components/ui/button"
 import { CalendarIcon } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { useState } from "react"
+import { Last30DaysConsumption, Last7DaysConsumption } from "@/components/dashboard/consumption-graphs"
 
 export default function DashboardPage() {
   const { isTSO } = useAuth()
   const [refreshDevices, setRefreshDevices] = useState(0)
+
+  console.log("isTSO", isTSO)
 
   const handleDeviceAdded = () => {
     setRefreshDevices(prev => prev + 1)
@@ -40,38 +43,12 @@ export default function DashboardPage() {
             <TabsTrigger value="rewards">Rewards</TabsTrigger>
           </TabsList>
           <TabsContent value="overview" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <RewardsSummary />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <Card className="col-span-4">
-                <CardHeader>
-                  <CardTitle>Energy Curtailment Overview</CardTitle>
-                  <CardDescription>Your energy savings and curtailment participation</CardDescription>
-                </CardHeader>
-                <CardContent className="pl-2">
-                  <EnergyOverview />
-                </CardContent>
-              </Card>
-              <Card className="col-span-4">
-                <CardHeader>
-                  <CardTitle>Live Energy Usage</CardTitle>
-                  <CardDescription>Your energy usage in real time</CardDescription>
-                </CardHeader>
-                <CardContent className="pl-2">
-                  <LiveEnergyUsage />
-                </CardContent>
-              </Card>
-              <Card className="col-span-3">
-                <CardHeader>
-                  <CardTitle>Recent Curtailment Events</CardTitle>
-                  <CardDescription>Your participation in recent grid events</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <CurtailmentEvents />
-                </CardContent>
-              </Card>
-            </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+            <LastYearConsumption />
+            <Last30DaysConsumption />
+            <Last7DaysConsumption />
+            <LiveEnergyUsage />
+          </div>
           </TabsContent>
 
           {!isTSO && (
@@ -103,6 +80,9 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <p>Detailed curtailment event history will be displayed here.</p>
+              </CardContent>
+              <CardContent>
+                <CurtailmentEvents />
               </CardContent>
             </Card>
           </TabsContent>

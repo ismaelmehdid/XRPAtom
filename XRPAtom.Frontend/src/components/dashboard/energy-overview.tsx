@@ -1,7 +1,10 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid, TooltipProps } from "recharts"
+import { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { yearlyData } from "./energy-data"
 
 const data = [
   {
@@ -72,7 +75,7 @@ export function LiveEnergyUsage() {
         setLiveData((prevData) => {
           const updatedData = [...prevData];
           if (updatedData.length >= 60) updatedData.shift();
-          updatedData.push(newData); // <- ou newData.consumption si c’est un objet
+          updatedData.push(newData); // <- ou newData.consumption si c'est un objet
           return updatedData;
         });
       } catch (err) {
@@ -84,9 +87,6 @@ export function LiveEnergyUsage() {
       console.log("WebSocket connection closed");
     };
 
-    web_socket.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
 
   }, []);
 
@@ -138,6 +138,71 @@ export function EnergyOverview() {
         />
       </BarChart>
     </ResponsiveContainer>
+  )
+}
+
+export function LastYearConsumption() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Last Year Consumption</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={yearlyData}>
+              <YAxis />
+              <Tooltip
+                content={({ active, payload }: TooltipProps<ValueType, NameType>) => {
+                  if (active && payload && payload.length) {
+                    const consumption = payload[0].value as number
+                    const baseline = payload[1].value as number
+                    return (
+                      <div className="rounded-lg border bg-background p-2 shadow-sm">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="flex flex-col">
+                            <span className="text-[0.70rem] uppercase text-muted-foreground">
+                              Consumption
+                            </span>
+                            <span className="font-bold text-muted-foreground">
+                              {consumption.toFixed(2)} kWh
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[0.70rem] uppercase text-muted-foreground">
+                              Baseline
+                            </span>
+                            <span className="font-bold">
+                              {baseline.toFixed(2)} kWh
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+                  return null
+                }}
+              />
+              <Bar
+                dataKey="curtailed"
+                name="Energy Usage"
+                fill="currentColor"
+                className="fill-primary"
+                radius={[4, 4, 0, 0]}
+              />
+              <Bar
+                dataKey="baseline"
+                name="Baseline"
+                fill="currentColor"
+                className="fill-muted"
+                radius={[4, 4, 0, 0]}
+                opacity={0.3}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 

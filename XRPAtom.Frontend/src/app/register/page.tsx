@@ -55,8 +55,6 @@ export default function RegisterPage() {
       return
     }
 
-    console.log(formData)
-
     try {
       const response = await fetch("https://api.zunix.systems/api/auth/register", {
         method: "POST",

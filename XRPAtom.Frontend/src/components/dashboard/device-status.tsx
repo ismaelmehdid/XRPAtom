@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
@@ -9,6 +11,7 @@ import { Thermometer, Droplet, Car, Plug, Lightbulb, Battery, Settings, RefreshC
 import { Device, fetchApi, getUserDevices } from "@/lib/api"
 import { DeviceType } from "./add-device-form"
 import { toast } from "sonner"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 const deviceIcons: Record<DeviceType, React.ReactNode> = {
   thermostat: <Thermometer className="h-8 w-8" />,
@@ -140,75 +143,19 @@ export function DeviceStatus() {
   const renderErrorMessage = () => error && <div className="text-red-500">{error}</div>
 
   const renderDevice = (device: Device) => (
-    <Card key={device.id} className={device.status === "offline" ? "opacity-70" : ""}>
-      <CardHeader className="flex items-start justify-between space-y-0">
-        {renderDeviceHeader(device)}
-      </CardHeader>
-      <CardContent>
-        {renderDeviceContent(device)}
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        {renderDeviceSettingsButton(device)}
-        {renderDeleteButton(device)}
-      </CardFooter>
-    </Card>
-  )
-
-  const renderDeviceHeader = (device: Device) => (
-    <div>
-      <CardTitle className="flex items-center">{device.name}</CardTitle>
-      <CardDescription>{device.location}</CardDescription>
-      <Badge variant={device.status === "online" ? "default" : "outline"}>{device.status}</Badge>
-    </div>
-  )
-
-  const renderDeviceContent = (device: Device) => (
-    <>
-      <div className="flex justify-center py-4">
-        <div className="rounded-full bg-muted p-6">
-          {deviceIcons[device.type.toLowerCase() as DeviceType]}
-        </div>
-      </div>
-      <div className="space-y-4 mt-4">
-        {renderEnrollmentSwitch(device)}
-        {device.enrolled && device.status === "online" && renderCurtailmentLevel(device)}
-      </div>
-      <div className="space-y-4 mt-4">
-        {renderCurtailmentLevel(device)}
-      </div>
-    </>
-  )
-
-  const renderEnrollmentSwitch = (device: Device) => (
-    <div className="flex items-center justify-between">
-      <Label htmlFor={`enroll-${device.id}`}>Enrolled in Curtailment</Label>
-      <Switch
-        id={`enroll-${device.id}`}
-        checked={device.enrolled}
-        onCheckedChange={(checked) => handleEnrollmentChange(device.id, checked)}
-        disabled={device.status === "offline"}
-      />
-    </div>
-  )
-
-  const renderCurtailmentLevel = (device: Device) => (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label>Curtailment Level</Label>
-        <span className="text-sm font-medium">
-          {device.curtailmentLevel === 1 ? "Minimal" :
-           device.curtailmentLevel === 2 ? "Moderate" :
-           device.curtailmentLevel === 3 ? "Maximum" : "None"}
-        </span>
-      </div>
-      <Slider
-        value={[device.curtailmentLevel || 0]}
-        min={0}
-        max={3}
-        step={1}
-        onValueChange={(value) => handleCurtailmentLevelChange(device.id, value[0])}
-      />
-    </div>
+    <TableRow key={device.id}>
+      <TableCell>{device.name}</TableCell>
+      <TableCell>
+        <Badge variant={device.status === "online" ? "default" : "outline"}>{device.status}</Badge>
+      </TableCell>
+      <TableCell>{new Date(device.lastSeen).toLocaleString()}</TableCell>
+      <TableCell>
+        <Button variant="outline" size="sm" onClick={() => handleSettingsClick(device)}>
+          <Settings className="mr-2 h-4 w-4" />
+          Settings
+        </Button>
+      </TableCell>
+    </TableRow>
   )
 
   const handleSettingsClick = (device: Device) => {
@@ -267,33 +214,31 @@ export function DeviceStatus() {
       </div>
     )
   }  
-  
-  const renderDeviceSettingsButton = (device: Device) => (
-    <Button variant="outline" size="sm" onClick={() => handleSettingsClick(device)}>
-      <Settings className="mr-2 h-4 w-4" />
-      Device Settings
-    </Button>
-  )  
-
-  const renderDeleteButton = (device: Device) => (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="text-red-600 hover:text-red-700"
-      onClick={() => handleDeleteClick(device.id)}
-    >
-      Delete
-    </Button>
-  )  
 
   return (
-    <div className="space-y-4">
-      {renderRefreshButton()}
-      {renderErrorMessage()}
-      <div className="grid gap-4">
-        {devices.length ? devices.map(renderDevice) : <div>No devices found</div>}
-      </div>
-      {isSettingsOpen && renderDeviceSettingsModal()}
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Connected Devices</CardTitle>
+        <CardDescription>Manage your smart devices and curtailment settings</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Device</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Last Update</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {devices.map(renderDevice)}
+          </TableBody>
+        </Table>
+        {renderRefreshButton()}
+        {renderErrorMessage()}
+        {isSettingsOpen && renderDeviceSettingsModal()}
+      </CardContent>
+    </Card>
   )
 }
