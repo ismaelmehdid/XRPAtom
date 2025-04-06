@@ -10,12 +10,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class MerossDeviceManager:
+    queue: asyncio.Queue
+    
     def __init__(self, email: str, password: str, api_base_url: str = "https://iotx-eu.meross.com"):
         self.email = email
         self.password = password
         self.api_base_url = api_base_url
         self.manager = None
         self.devices = []
+        self.offline = False
+        self.queue = asyncio.Queue()
 
     async def init(self):
         http_api_client = await MerossHttpClient.async_from_user_password(
@@ -29,6 +33,7 @@ class MerossDeviceManager:
         await self.manager.async_device_discovery()
         self.devices = self.manager.find_devices()
         self.device = self.get_device_by_name("smart_plug")
+        asyncio.create_task(self.check_device_presence())
         if self.device:
             print(f"Device found: {self.device.name}")
         else:
@@ -48,20 +53,29 @@ class MerossDeviceManager:
         if self.device:
             await self.device.async_turn_off(channel=channel)
 
-    async def refresh_devices(self):
-        if self.manager:
-            await self.manager.async_device_discovery()
-            self.devices = self.manager.find_devices()
-            self.device = self.get_device_by_name("smart_plug")
-
     async def check_device_status(self):
+        try:
+            if not self.queue.empty():
+                status = await self.queue.get()
+                if status == "online":
+                    enabled_devices["smart_plug"] = True
+                    self.offline = False
+                    logger.info(f"Device {self.device.name} is online.")
+                elif status == "offline":
+                    enabled_devices["smart_plug"] = False
+                    self.offline = True
+                    logger.warning(f"Device {self.device.name} is offline.")
+                else:
+                    logger.error(f"Unexpected status: {status}")
+        except asyncio.QueueEmpty:
+            logger.debug("Queue is empty, no status update available.")
+            return
+        if self.offline == True:
+            return
         if self.device:
             try:
-                if self.device.online_status == OnlineStatus.ONLINE:
-                    if self.device.is_on(channel=0):
-                        enabled_devices["smart_plug"] = True
-                    else:
-                        enabled_devices["smart_plug"] = False
+                if self.device.is_on(channel=0):
+                    enabled_devices["smart_plug"] = True
                 else:
                     enabled_devices["smart_plug"] = False
             except Exception as e:
@@ -69,32 +83,19 @@ class MerossDeviceManager:
                 logger.error(f"Unexpected error checking device status: {e}")
         else:
             enabled_devices["smart_plug"] = False
-            logger.warning("Device not initialized or found.")
 
-    async def check_device_presence(self, interval: int = 5):
+    async def check_device_presence(self, interval: int = 2):
         while True:
-            await self.refresh_devices()
             if self.device:
                 try:
                     await self.device.async_update()
-                    if self.device.is_on(channel=0):
-                        enabled_devices["smart_plug"] = True
-                        logger.info(f"{self.device.name} is reachable and ON.")
-                    else:
-                        enabled_devices["smart_plug"] = False
-                        logger.info(f"{self.device.name} is reachable but OFF.")
+                    await self.queue.put("online")
                 except CommandTimeoutError as e:
                     logger.warning(f"{self.device.name} is unreachable (timeout).")
-                    enabled_devices["smart_plug"] = False
-                    self.device = None
+                    await self.queue.put("offline")
                 except Exception as e:
                     logger.error(f"Unexpected error checking device presence: {e}")
-                    enabled_devices["smart_plug"] = False
-                    self.device = None
-            else:
-                enabled_devices["smart_plug"] = False
-                logger.warning("Device not initialized or found.")
-                self.device = None
+                    await self.queue.put("offline")
             await asyncio.sleep(interval)
 
     async def close(self):
