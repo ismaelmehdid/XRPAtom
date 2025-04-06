@@ -5,7 +5,7 @@ import torch.optim as optim
 class LSTMModel(nn.Module):
     def __init__(self, input_size, hidden_size, dropout_rate, output_size):
         super(LSTMModel, self).__init__()
-        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=False)
+        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
         self.dropout = nn.Dropout(dropout_rate)
         self.fc = nn.Linear(hidden_size, output_size)
 
