@@ -20,8 +20,8 @@ if __name__ == "__main__":
         "data_path": Path('./data'),
         "weather_api_base_url": os.getenv("WEATHER_API_BASE_URL"),
         "batch_size": 32,
-        "lr_hourly_model": 0.001,
-        "lr_daily_model": 0.001,
+        "lr_hourly_model": 0.01,
+        "lr_daily_model": 0.01,
     }
 
     dataset = PowerConsumptionDataset(config=config)
