@@ -1,24 +1,19 @@
 import asyncio
-import os
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from websocket_manager import WebSocketManager
 from consumption_simulation import simulate_consumption
 from meross_device_manager import MerossDeviceManager
-import asyncio
 app = FastAPI(docs_url="/docs", redoc_url=None, title="Real-time consumption websocket", version="1.0.0")
 ws_manager = WebSocketManager()
 
 device_manager = MerossDeviceManager(
-    # email=os.getenv('MEROSS_EMAIL'),
-    # password=os.getenv('MEROSS_PASSWORD')
     email="dresyv@gmail.com",
-    password="ParisBlockChainWeek",
+    password="Password123",
 )
 
 @app.on_event("startup")
 async def startup():
     await device_manager.init()
-    asyncio.create_task(device_manager.check_device_presence())
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
