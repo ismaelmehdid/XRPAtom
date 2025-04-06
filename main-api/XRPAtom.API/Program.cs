@@ -5,7 +5,6 @@ using XRPAtom.Blockchain;
 using XRPAtom.API.Configuration;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
-using XRPAtom.Infrastructure.BackgroundServices;
 
 namespace XRPAtom.API
 {
