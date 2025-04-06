@@ -33,8 +33,8 @@ class PowerConsumptionValidator:
                         batch_data["day_in_week"],
                         batch_data["hour"]
                     ], dim=1).to(self._device).float()
-                    feature_labels_week = features_labels.reshape(self._batch_size, 5, 24, -1)
-                    feature_labels_week = feature_labels_week.mean(dim=2)
+                    feature_labels_week = features_labels.reshape(self._batch_size, 5, -1, 24)
+                    feature_labels_week = feature_labels_week.mean(dim=3)
                     days_count = features_labels.shape[-1] / 24
                     week_count = days_count / 7
                     features = feature_labels_week[:, :, :int(week_count-1)*7]
