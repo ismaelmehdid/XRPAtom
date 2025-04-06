@@ -18,6 +18,7 @@ COPY XRPAtom.API/. ./XRPAtom.API/
 COPY XRPAtom.Blockchain/. ./XRPAtom.Blockchain/
 COPY XRPAtom.Core/. ./XRPAtom.Core/
 COPY XRPAtom.Infrastructure/. ./XRPAtom.Infrastructure/
+COPY XRPAtom.BackgroundServices/. ./XRPAtom.BackgroundServices/
 
 # Build and publish the app
 WORKDIR /app
@@ -34,6 +35,7 @@ COPY --from=build /app/out ./
 ENV ASPNETCORE_URLS=http://+:80
 ENV ASPNETCORE_ENVIRONMENT=Development
 # This is the critical setting to disable HTTPS redirect
+ENV ASPNETCORE_HTTPS_PORT=
 ENV ASPNETCORE_HTTP_PORTS=80
 # Disable HTTPS development certificate
 ENV DOTNET_GENERATE_ASPNET_CERTIFICATE=false
