@@ -9,6 +9,7 @@ COPY XRPAtom.API/*.csproj ./XRPAtom.API/
 COPY XRPAtom.Blockchain/*.csproj ./XRPAtom.Blockchain/
 COPY XRPAtom.Core/*.csproj ./XRPAtom.Core/
 COPY XRPAtom.Infrastructure/*.csproj ./XRPAtom.Infrastructure/
+COPY XRPAtom.BackgroundServices/. ./XRPAtom.BackgroundServices/
 
 # Restore dependencies
 RUN dotnet restore
