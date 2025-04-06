@@ -15,9 +15,11 @@
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.14" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
+        <PackageReference Include="XUMM.NET.SDK" Version="1.9.3" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\XRPAtom.BackgroundServices\XRPAtom.BackgroundServices.csproj" />
       <ProjectReference Include="..\XRPAtom.Blockchain\XRPAtom.Blockchain.csproj" />
       <ProjectReference Include="..\XRPAtom.Infrastructure\XRPAtom.Infrastructure.csproj" />
     </ItemGroup>
