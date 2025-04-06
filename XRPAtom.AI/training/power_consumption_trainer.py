@@ -71,7 +71,9 @@ class PowerConsumptionTrainer:
         }
 
     def train(self, epochs):
+        val_results = {}
         for epoch in range(epochs):
-            val_loss = self._validator.validate()
-            print(f"Epoch {epoch}/{epochs}, Val Loss: {val_loss}")
+            val_results = self._validator.validate()
+            print(f"Epoch {epoch}/{epochs}, Val Loss: {val_results["error"]}")
             train_loss = self.train_one_epoch()
+        return val_results

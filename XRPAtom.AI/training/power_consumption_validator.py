@@ -12,7 +12,7 @@ class PowerConsumptionValidator:
         self._daily_model = models["daily"].to(self._device)
         self._config = config
         self._batch_size = self._config.get("batch_size", 32)
-        self._weights = torch.tensor([0.8, 0.2]).to(self._device)
+        self._weights = torch.tensor([0.7, 0.3]).to(self._device)
 
         self._val_loader = DataLoader(val_dataset, batch_size=self._batch_size, shuffle=False, num_workers=4)
         self._criterion = nn.MSELoss()
@@ -21,6 +21,8 @@ class PowerConsumptionValidator:
         self._daily_model.eval()
         self._hourly_model.eval()
         running_loss = 0.0
+        result_outputs = []
+        result_labels = []
         with torch.no_grad():
             for i, batch_data in tqdm(enumerate(self._val_loader)):
                 try:
@@ -40,7 +42,9 @@ class PowerConsumptionValidator:
                     for day in range(int(days_count)-7, int(days_count)-3):
                         features = features_labels[:, :, 0:(day + 2)*24]
                         labels = features_labels[:, 0, (day + 2)*24:(day + 3)*24].squeeze(1)
+                        result_labels.append(labels)
                         outputs = self._hourly_model(features)[:, -24:, :].squeeze(2)
+                        result_outputs.append(outputs)
                         week_output_day = week_outputs[:, day - int(week_count-1)*7 ].unsqueeze(1).repeat(1, 24)
                         outputs = torch.sum(torch.concat([outputs.unsqueeze(2), week_output_day.unsqueeze(2)], dim=2) * self._weights, dim=2)
                         loss = self._criterion(outputs, labels)
@@ -48,4 +52,8 @@ class PowerConsumptionValidator:
                 except Exception as e:
                     print(f"Validation error")
                     continue
-        return running_loss / len(self._val_loader)
+        return {
+            "error": running_loss / len(self._val_loader),
+            "outputs": torch.cat(result_outputs, dim=0).cpu().numpy(),
+            "labels": torch.cat(result_labels, dim=0).cpu().numpy()
+        }
