@@ -20,14 +20,14 @@ if __name__ == "__main__":
         "data_path": Path('./data'),
         "weather_api_base_url": os.getenv("WEATHER_API_BASE_URL"),
         "batch_size": 32,
-        "lr_hourly_model": 0.1,
-        "lr_daily_model": 0.1,
+        "lr_hourly_model": 0.01,
+        "lr_daily_model": 0.01,
     }
 
     dataset = PowerConsumptionDataset(config=config)
     models = {
-        "hourly": LSTMModel(input_size=5, hidden_size=40, dropout_rate=0.2, output_size=24),
-        "daily": LSTMModel(input_size=5, hidden_size=20, dropout_rate=0.3, output_size=7),
+        "hourly": LSTMModel(input_size=5, hidden_size=10, dropout_rate=0.1, output_size=24),
+        "daily": LSTMModel(input_size=5, hidden_size=10, dropout_rate=0.1, output_size=7),
     }
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
