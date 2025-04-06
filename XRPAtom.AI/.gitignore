@@ -1,0 +1,7 @@
+.env
+xrpatom.egg-info
+data
+.vscode
+.pyc
+.ssh
+__pycache__

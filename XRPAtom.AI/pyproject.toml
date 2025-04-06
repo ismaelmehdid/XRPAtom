@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xrpatom"
+version = "0.0.1"
+description = "This is the main repository for the XRPAtom project."
+authors = [
+    {name = "Jan Matter", email = "jan.matter@outlook.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}  # Adjust license if needed
+urls = {repository = "https://github.com/redarling/XRPAtom"}
+requires-python = ">=3.12.0"
+
+[tool.setuptools]
+packages = ["clients", "datasets", "shared", "models", "training"]
+include-package-data = true
