@@ -19,6 +19,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.14" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+      <PackageReference Include="XUMM.NET.SDK" Version="1.9.3" />
     </ItemGroup>
 
 </Project>

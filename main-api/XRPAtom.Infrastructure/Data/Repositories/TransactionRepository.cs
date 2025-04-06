@@ -143,5 +143,11 @@ namespace XRPAtom.Infrastructure.Data.Repositories
                 .Take(pageSize)
                 .ToListAsync();
         }
+
+        public async Task<Transaction?> GetByPayloadId(string payloadId)
+        {
+            return await _context.Transactions
+                .FirstOrDefaultAsync(t => t.TransactionHash == payloadId);
+        }
     }
 }

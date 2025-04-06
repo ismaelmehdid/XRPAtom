@@ -12,8 +12,8 @@ using XRPAtom.Infrastructure.Data;
 namespace XRPAtom.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250405180251_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250406000313_EscrowDetails")]
+    partial class EscrowDetails
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -151,6 +151,88 @@ namespace XRPAtom.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Devices");
+                });
+
+            modelBuilder.Entity("XRPAtom.Core.Domain.EscrowDetail", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("CancelPayloadId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Condition")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DestinationAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EscrowType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EventId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("FinishAfter")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FinishPayloadId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Fulfillment")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OfferSequence")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ParticipantId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SourceAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TransactionHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("XummPayloadId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.HasIndex("TransactionHash");
+
+                    b.HasIndex("XummPayloadId");
+
+                    b.ToTable("EscrowDetails");
                 });
 
             modelBuilder.Entity("XRPAtom.Core.Domain.EventParticipation", b =>
@@ -364,16 +446,13 @@ namespace XRPAtom.Infrastructure.Migrations
                         .HasColumnType("character varying(500)");
 
                     b.Property<string>("RawResponse")
-                        .IsRequired()
                         .HasMaxLength(4000)
                         .HasColumnType("character varying(4000)");
 
                     b.Property<string>("RelatedEntityId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("RelatedEntityType")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
@@ -544,6 +623,17 @@ namespace XRPAtom.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("XRPAtom.Core.Domain.EscrowDetail", b =>
+                {
+                    b.HasOne("XRPAtom.Core.Domain.CurtailmentEvent", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
                 });
 
             modelBuilder.Entity("XRPAtom.Core.Domain.EventParticipation", b =>

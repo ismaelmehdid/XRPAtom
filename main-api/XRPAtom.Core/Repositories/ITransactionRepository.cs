@@ -90,5 +90,12 @@ namespace XRPAtom.Core.Repositories
         /// <param name="transactionHash"></param>
         /// <returns></returns>
         Task<bool> UpdateTransactionHash(string id, string transactionHash);
+
+        /// <summary>
+        /// Get a transaction based on its payloadId
+        /// </summary>
+        /// <param name="payloadId"></param>
+        /// <returns></returns>
+        Task<Transaction?> GetByPayloadId(string payloadId);
     }
 }

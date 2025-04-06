@@ -51,6 +51,10 @@ namespace XRPAtom.Core.DTOs
         [Required]
         [Range(0.1, 10000)]
         public decimal MaxKwh { get; set; }
+        
+        [Required]
+        [StringLength(50)]
+        public string CreatedBy { get; set; }
     }
 
     public class UpdateMarketplaceListingDto
@@ -110,6 +114,10 @@ namespace XRPAtom.Core.DTOs
         
         [StringLength(500)]
         public string Notes { get; set; }
+        
+        [Required]
+        [StringLength(50)]
+        public string CreatedBy { get; set; }
     }
 
     public class TransactionStatusUpdateDto

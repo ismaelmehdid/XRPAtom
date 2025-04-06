@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using XRPAtom.Blockchain.Interfaces;
 using XRPAtom.Core.DTOs;
+using XRPAtom.Core.Interfaces;
 using XRPAtom.Core.Repositories;
+using XUMM.NET.SDK.Clients.Interfaces;
+using XUMM.NET.SDK.Models.Payload;
 
 namespace XRPAtom.API.Controllers
 {
@@ -14,16 +17,19 @@ namespace XRPAtom.API.Controllers
         private readonly IUserWalletService _userWalletService;
         private readonly IXRPLTransactionService _xrplTransactionService;
         private readonly ITransactionRepository _transactionRepository;
+        private readonly IXummPayloadClient _xummPayloadClient;
         private readonly ILogger<TransactionController> _logger;
 
         public TransactionController(
             IUserWalletService userWalletService,
             IXRPLTransactionService xrplTransactionService,
             ITransactionRepository transactionRepository,
+            IXummPayloadClient xummPayloadClient,
             ILogger<TransactionController> logger)
         {
             _userWalletService = userWalletService;
             _xrplTransactionService = xrplTransactionService;
+            _xummPayloadClient = xummPayloadClient;
             _transactionRepository = transactionRepository;
             _logger = logger;
         }
@@ -86,8 +92,8 @@ namespace XRPAtom.API.Controllers
             }
         }
 
-        [HttpPost("prepare")]
-        public async Task<IActionResult> PrepareTransaction([FromBody] CreateTransactionDto request)
+        [HttpPost("create-xumm")]
+        public async Task<IActionResult> CreateXummTransaction([FromBody] CreateTransactionDto request)
         {
             try
             {
@@ -103,160 +109,114 @@ namespace XRPAtom.API.Controllers
                     return NotFound(new { error = "Wallet not found for this user" });
                 }
 
-                // Prepare the transaction
-                var prepareResponse = await _xrplTransactionService.PrepareTransaction(new XRPAtom.Blockchain.Models.TransactionPrepareRequest
+                // Create JSON payload for XUMM
+                var payloadJson = $"{{ \"TransactionType\": \"Payment\", " +
+                                  $"\"Destination\": \"{request.DestinationAddress}\", " +
+                                  $"\"Amount\": \"{(long)(request.Amount * 1000000)}\" }}"; // Convert to drops
+
+                if (request.Currency != "XRP")
                 {
-                    TransactionType = "Payment",
+                    // For non-XRP currencies, use different format
+                    payloadJson = $"{{ \"TransactionType\": \"Payment\", " +
+                                 $"\"Destination\": \"{request.DestinationAddress}\", " +
+                                 $"\"Amount\": {{ " +
+                                 $"\"currency\": \"{request.Currency}\", " +
+                                 $"\"issuer\": \"{request.DestinationAddress}\", " +
+                                 $"\"value\": \"{request.Amount}\" " +
+                                 $"}} }}";
+                }
+
+                var payload = new XummPostJsonPayload(payloadJson);
+
+                // Add optional memo if provided
+                if (!string.IsNullOrEmpty(request.Memo))
+                {
+                    payload.CustomMeta = new XummPayloadCustomMeta
+                    {
+                        Instruction = request.Memo
+                    };
+                }
+
+                // Record transaction in our database as "pending_signature"
+                var transaction = new XRPAtom.Core.Domain.Transaction
+                {
                     SourceAddress = wallet.Address,
-                    DestinationAddress = request.DestinationAddress,
-                    Amount = request.Amount,
-                    Currency = request.Currency ?? "XRP"
-                });
-
-                if (!prepareResponse.Success)
-                {
-                    return BadRequest(new { error = prepareResponse.ErrorMessage });
-                }
-
-                return Ok(prepareResponse);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error preparing transaction");
-                return StatusCode(500, new { error = "An error occurred while preparing the transaction" });
-            }
-        }
-
-        [HttpPost("submit")]
-        public async Task<IActionResult> SubmitTransaction([FromBody] SubmitTransactionRequest request)
-        {
-            try
-            {
-                var userId = User.FindFirst("userId")?.Value;
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return BadRequest(new { error = "Invalid user identifier" });
-                }
-
-                // Submit the signed transaction
-                var submitResponse = await _xrplTransactionService.SubmitSignedTransaction(request.SignedTransaction);
-
-                if (!submitResponse.Success)
-                {
-                    return BadRequest(new { error = submitResponse.ErrorMessage ?? submitResponse.EngineResultMessage });
-                }
-
-                // Record the transaction in our database
-                // In a production app, you would extract all details from the transaction
-                await _transactionRepository.CreateTransactionAsync(new XRPAtom.Core.Domain.Transaction
-                {
-                    SourceAddress = request.SourceAddress,
                     DestinationAddress = request.DestinationAddress,
                     Amount = request.Amount,
                     Currency = request.Currency ?? "XRP",
                     Type = "Payment",
-                    Status = "submitted", // Will be updated by background job
-                    TransactionHash = submitResponse.TransactionHash,
+                    Status = "pending_signature",
                     Timestamp = DateTime.UtcNow,
-                    Memo = request.Memo
-                });
+                    Memo = request.Memo,
+                    Issuer = wallet.Address,
+                    TransactionHash = "",
+                    RelatedEntityId = "",
+                    RelatedEntityType = "",
+                    RawResponse = ""
+                };
 
-                // Return the transaction hash
+                await _transactionRepository.CreateTransactionAsync(transaction);
+
+                // Create XUMM payload
+                var response = await _xummPayloadClient.CreateAsync(payload);
+
+                // Update transaction with payload reference
+                await _transactionRepository.UpdateTransactionHash(transaction.Id, response.Uuid);
+
                 return Ok(new
                 {
-                    success = true,
-                    transactionHash = submitResponse.TransactionHash
+                    transactionId = transaction.Id,
+                    payloadId = response.Uuid,
+                    qrUrl = response.Refs.QrPng,
+                    deepLink = response.Next.Always,
+                    websocket = response.Refs.WebsocketStatus
                 });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error submitting transaction");
-                return StatusCode(500, new { error = "An error occurred while submitting the transaction" });
+                _logger.LogError(ex, "Error creating XUMM transaction");
+                return StatusCode(500, new { error = "An error occurred while creating the transaction" });
             }
         }
 
-        [HttpGet("status/{transactionHash}")]
-        public async Task<IActionResult> CheckTransactionStatus(string transactionHash)
+        [HttpGet("xumm-status/{payloadId}")]
+        public async Task<IActionResult> CheckXummPayloadStatus(string payloadId)
         {
             try
             {
-                var response = await _xrplTransactionService.CheckTransactionStatus(transactionHash);
-
-                if (!response.Success && response.Status == "error")
+                var payloadDetails = await _xummPayloadClient.GetAsync(payloadId);
+                
+                if (payloadDetails == null)
                 {
-                    return BadRequest(new { error = response.Message });
+                    return NotFound(new { error = "Payload not found" });
                 }
 
-                return Ok(response);
+                // If the payload is signed and completed, update our transaction record
+                if (payloadDetails.Meta.Resolved && payloadDetails.Response?.Txid != null)
+                {
+                    // Find the transaction by payload ID (stored in our TransactionHash field temporarily)
+                    var transaction = await _transactionRepository.GetByPayloadId(payloadId);
+                    if (transaction != null)
+                    {
+                        // Update the transaction status and hash
+                        await _transactionRepository.UpdateStatusAsync(transaction.Id, "submitted");
+                        await _transactionRepository.UpdateTransactionHash(transaction.Id, payloadDetails.Response.Txid);
+                    }
+                }
+
+                return Ok(new
+                {
+                    resolved = payloadDetails.Meta.Resolved,
+                    signed = payloadDetails.Meta.Signed,
+                    expired = payloadDetails.Meta.Expired,
+                    txid = payloadDetails.Response?.Txid
+                });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error checking transaction status");
+                _logger.LogError(ex, "Error checking XUMM payload status");
                 return StatusCode(500, new { error = "An error occurred while checking the transaction status" });
             }
         }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetTransactionDetails(string id)
-        {
-            try
-            {
-                var userId = User.FindFirst("userId")?.Value;
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return BadRequest(new { error = "Invalid user identifier" });
-                }
-
-                var wallet = await _userWalletService.GetWalletByUserIdAsync(userId);
-                if (wallet == null)
-                {
-                    return NotFound(new { error = "Wallet not found for this user" });
-                }
-
-                var transaction = await _transactionRepository.GetTransactionByIdAsync(id);
-                if (transaction == null)
-                {
-                    return NotFound(new { error = "Transaction not found" });
-                }
-
-                // Security check: ensure the user is authorized to view this transaction
-                if (transaction.SourceAddress != wallet.Address && transaction.DestinationAddress != wallet.Address)
-                {
-                    return Forbid();
-                }
-
-                // Convert to DTO
-                var transactionDto = new WalletTransactionDto
-                {
-                    Id = transaction.Id,
-                    SourceAddress = transaction.SourceAddress,
-                    DestinationAddress = transaction.DestinationAddress,
-                    Amount = transaction.Amount,
-                    Currency = transaction.Currency,
-                    Type = transaction.Type,
-                    Status = transaction.Status,
-                    TransactionHash = transaction.TransactionHash,
-                    Timestamp = transaction.Timestamp,
-                    Memo = transaction.Memo
-                };
-
-                return Ok(transactionDto);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving transaction details");
-                return StatusCode(500, new { error = "An error occurred while retrieving transaction details" });
-            }
-        }
-    }
-
-    public class SubmitTransactionRequest
-    {
-        public string SignedTransaction { get; set; }
-        public string SourceAddress { get; set; }
-        public string DestinationAddress { get; set; }
-        public decimal Amount { get; set; }
-        public string Currency { get; set; }
-        public string Memo { get; set; }
     }
 }

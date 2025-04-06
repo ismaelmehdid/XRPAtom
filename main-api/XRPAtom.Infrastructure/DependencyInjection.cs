@@ -26,11 +26,6 @@ namespace XRPAtom.Infrastructure
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IPasswordService, PasswordService>();
             services.AddScoped<ICurtailmentEventService, CurtailmentEventService>();
-            // services.AddScoped<IMarketplaceService, MarketplaceService>();
-
-
-            // Register background services
-            // services.AddHostedService<CurtailmentSchedulerService>();
 
             return services;
         }

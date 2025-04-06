@@ -7,10 +7,6 @@ namespace XRPAtom.Core.Interfaces
     {
         Task<CurtailmentEventDto> GetEventByIdAsync(string eventId);
         
-        Task<IEnumerable<CurtailmentEventDto>> GetAllEventsAsync(int page = 1, int pageSize = 10);
-        
-        Task<IEnumerable<CurtailmentEventDto>> GetEventsByStatusAsync(EventStatus status, int page = 1, int pageSize = 10);
-        
         Task<IEnumerable<CurtailmentEventDto>> GetUserEventsAsync(string userId, int page = 1, int pageSize = 10);
         
         Task<int> GetUserEventCountAsync(string userId);
@@ -18,10 +14,6 @@ namespace XRPAtom.Core.Interfaces
         Task<CurtailmentEventDto> CreateEventAsync(CreateCurtailmentEventDto createEventDto);
         
         Task<CurtailmentEventDto> UpdateEventAsync(string eventId, UpdateCurtailmentEventDto updateEventDto);
-        
-        Task<bool> DeleteEventAsync(string eventId);
-        
-        Task<bool> UpdateEventStatusAsync(string eventId, EventStatus status);
         
         Task<bool> RegisterUserForEventAsync(string eventId, string userId, string walletAddress);
         

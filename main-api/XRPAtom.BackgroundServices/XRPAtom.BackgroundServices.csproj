@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.Extensions.Hosting.Abstractions">
+        <HintPath>..\..\..\..\..\..\usr\local\share\dotnet\x64\shared\Microsoft.AspNetCore.App\8.0.11\Microsoft.Extensions.Hosting.Abstractions.dll</HintPath>
+      </Reference>
+      <Reference Include="Microsoft.Extensions.Logging.Abstractions">
+        <HintPath>..\..\..\..\..\..\usr\local\share\dotnet\x64\shared\Microsoft.AspNetCore.App\8.0.11\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\XRPAtom.Blockchain\XRPAtom.Blockchain.csproj" />
+      <ProjectReference Include="..\XRPAtom.Core\XRPAtom.Core.csproj" />
+      <ProjectReference Include="..\XRPAtom.Infrastructure\XRPAtom.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="XUMM.NET.SDK" Version="1.9.3" />
+    </ItemGroup>
+
+</Project>

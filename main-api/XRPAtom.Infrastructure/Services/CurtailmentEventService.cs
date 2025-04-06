@@ -184,7 +184,12 @@ namespace XRPAtom.Infrastructure.Services
                 UserId = userId,
                 WalletAddress = walletAddress,
                 Status = ParticipationStatus.Registered,
-                RegisteredAt = DateTime.UtcNow
+                RegisteredAt = DateTime.UtcNow,
+                EnergySaved = 0,
+                RewardAmount = 0,
+                RewardClaimed = false,
+                RewardTransactionId = "",
+                VerificationData = ""
             };
 
             _context.EventParticipations.Add(participation);
