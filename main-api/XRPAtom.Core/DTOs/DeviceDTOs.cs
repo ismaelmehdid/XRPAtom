@@ -50,7 +50,7 @@ namespace XRPAtom.Core.DTOs
         [StringLength(200)]
         public string Location { get; set; }
         
-        [Range(0, 100)]
+        [Range(0, 10000)]
         public double EnergyCapacity { get; set; } = 0;
         
         public object Preferences { get; set; }
@@ -59,10 +59,10 @@ namespace XRPAtom.Core.DTOs
     public class UpdateDeviceDto
     {
         [StringLength(100)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
         
         [StringLength(100)]
-        public string Model { get; set; }
+        public string? Model { get; set; }
         
         public bool? Enrolled { get; set; }
         
@@ -70,12 +70,14 @@ namespace XRPAtom.Core.DTOs
         public int? CurtailmentLevel { get; set; }
         
         [StringLength(200)]
-        public string Location { get; set; }
+        public string? Location { get; set; }
         
         [Range(0, 100)]
         public double? EnergyCapacity { get; set; }
         
-        public object Preferences { get; set; }
+        public object? Preferences { get; set; }
+        
+        public DeviceStatus? Status { get; set; }
     }
 
     public class DeviceStatusUpdateDto
