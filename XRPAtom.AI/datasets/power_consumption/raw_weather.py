@@ -4,7 +4,7 @@ from typing import Dict
 from datetime import datetime, timedelta
 from clients.weather_api import WeatherAPIClient
 
-class WeatherDataset:
+class RawWeatherData:
     """
     A class to represent a power consumption dataset.
     
@@ -70,6 +70,6 @@ if __name__ == "__main__":
 
     # Example usage
     weather_api_client = WeatherAPIClient(base_url=os.getenv("WEATHER_API_BASE_URL"))
-    weather_dataset = WeatherDataset(weather_api_client=weather_api_client)
+    weather_dataset = RawWeatherData(weather_api_client=weather_api_client)
     weather_data = weather_dataset.get_weather_data("Bizkaia")
     

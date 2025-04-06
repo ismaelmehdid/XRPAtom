@@ -5,7 +5,7 @@ from shared.constants import (
     POWER_CONSUMPTION_METADATA_PATH
 )
 
-class PowerConsumptionDataset:
+class RawPowerConsumptionData:
     """
     A class to represent a power consumption dataset.
     
@@ -58,14 +58,23 @@ if __name__ == "__main__":
 
     # Example usage
     data_path = Path('./data')
-    dataset = PowerConsumptionDataset(data_path=data_path)
+    dataset = RawPowerConsumptionData(data_path=data_path)
+    smallest_datetime = None
+    largest_datetime = None
     for user in dataset.metadata['user']:
         print(f"User: {user}")
         try:
             power_data = dataset.get_power_consumption(user)
+            smallest_datetime_user = list(power_data["timestamp"])[0]
+            largest_datetime_user = list(power_data["timestamp"])[-1]
+            if smallest_datetime is None or smallest_datetime_user > smallest_datetime  :
+                smallest_datetime = smallest_datetime_user
+            if largest_datetime is None or largest_datetime_user < largest_datetime:
+                largest_datetime = largest_datetime_user
         except FileNotFoundError as e:
             print(e)
             continue
-        break
+    print(smallest_datetime)
+    print(largest_datetime)
     place = dataset.metadata.apply(lambda x: x['province'], axis=1)
     print(len(set(place)))
