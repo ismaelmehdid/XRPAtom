@@ -44,14 +44,14 @@ class PowerConsumptionValidator:
                         labels = features_labels[:, 0, (day + 2)*24:(day + 3)*24].squeeze(1)
                         result_labels.append(labels)
                         outputs = self._hourly_model(features)[:, -24:, :].squeeze(2)
-                        print(labels)
-                        print(outputs)
-                        break
                         result_outputs.append(outputs)
                         week_output_day = week_outputs[:, day - int(week_count-1)*7 ].unsqueeze(1).repeat(1, 24)
                         outputs = torch.sum(torch.concat([outputs.unsqueeze(2), week_output_day.unsqueeze(2)], dim=2) * self._weights, dim=2)
                         loss = self._criterion(outputs, labels)
                         running_loss += loss.item()
+                        print(labels)
+                        print(outputs)
+                        break
                     break
                 except Exception as e:
                     print(f"Validation error")
